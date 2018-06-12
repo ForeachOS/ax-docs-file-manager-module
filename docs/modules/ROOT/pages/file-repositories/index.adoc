@@ -1,0 +1,12 @@
+= FileRepository implementations
+
+The FileManagerModule has the following `FileRepository` implementations:
+
+[#local]
+== LocalFileRepository
+Simple implementation that stores all files a single root directory.
+
+If the `pathGenerator` property is set, the `PathGenerator` instance will be used to generate a sub-directory structure to store the files in.
+  The `DateFormatPathGenerator` is a default implementation that uses the current date for creating sub-directories.
+  Using a `PathGenerator` can help distribute the physical files, avoiding OS performance problems when there are too many files in a single directory.
+

@@ -1,0 +1,25 @@
+= FileManagerModule releases
+
+[[module-artifact]]
+== Artifact
+
+[source,xml]
+----
+<dependencies>
+    <dependency>
+        <groupId>com.foreach.across.modules</groupId>
+        <artifactId>file-manager-module</artifactId>
+    </dependency>
+</dependencies>
+----
+
+== Release notes
+
+UserModule follows a https://semver.org[semantic versioning] scheme.
+
+* xref:releases/1.x.adoc#1-2-0[1.2.0]
+
+[[module-dependencies]]
+== Module dependencies
+
+FileManagerModule does not have any dependencies on other modules.

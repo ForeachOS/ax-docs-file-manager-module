@@ -1,0 +1,16 @@
+= Module settings
+
+|===
+|Property |Type |Description |Default
+
+|fileManagerModule.tempFolder
+|`String`
+|Default directory for temporary files. +
+|_$java.io.tmpdir_
+
+|fileManagerModule.localRepositoriesRoot
+|`String.class`
+|Root directory in which local repositories will be created.
+|_null_
+
+|===
