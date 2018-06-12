@@ -49,7 +49,7 @@ imageRecord.setFileUri( fd.getUri() );
 
 NOTE: Because a `FileRepository` can have different types of implementations, modify operations on `java.io.File` instances might be limited.
  To ensure maximum compatibility intermediate stages (using temporary files) or the `InputSteam`/`OutputStream` based methods should be used.
- See the {javadoc-filerepository}[`FileRepository` javadoc] for more details.
+ See the `FileRepository` javadoc for more details.
 
 == Registering a FileRepository
 Registering your own `FileRepository` can be done through the (exposed) `FileRepositoryRegistry` bean.
