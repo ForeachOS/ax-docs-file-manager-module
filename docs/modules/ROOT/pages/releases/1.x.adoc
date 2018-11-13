@@ -1,14 +1,14 @@
 = 1.x.x release notes
 
 [#1-3-0]
-== 1.3.0-SNAPSHOT
+== 1.3.0.RELEASE
 
-* Added `FileReference` and `FileReferenceProperties` entities
+* Added xref:file-reference/file-reference.adoc[FileReference] and xref:file-reference/file-reference.adoc#file-reference-properties[FileReferenceProperties] entities
 
 [#1-2-0]
 == 1.2.0.RELEASE
 
-* Added support for <<s3-repository,Amazon S3 file repositories>>
+* Added support for xref:file-repositories/s3.adoc[Amazon S3 file repositories]
 
 == 1.1.0.RELEASE
 

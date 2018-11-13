@@ -6,7 +6,6 @@ Clients access all files and repositories through the central <<file-manager,Fil
 
 By default the FileManagerModule sets up local directory based file repositories and requires very little configuration.
 
-:numbered:
 == Default configuration
 The default configuration of the FileManagerModule will automatically create file based repositories in a single root folder (controller by the *fileManagerModule.localRepositoriesRoot* property).
 A new repository will be created when it is accessed for the first time.
@@ -33,6 +32,58 @@ The `FileManager` service bean (exposed) is the facade to access any `FileReposi
 It is the central interface that clients should use for accessing files.
 Using it is pretty straightforward, the interface methods are well-documented and fairly self-explanatory.
 
+== Uploading files
+FileManagerModule provides the `FileReference` entity to handle uploading and saving of files. By using the following example your attachment
+itself will be persisted along with a reference to the `FileReference` entity.
+
+.Example of storing a file linked to an entity
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Entity
+@Table(name = "test_invoice")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class Invoice extends SettableIdBasedEntity<Invoice> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "seq_test_invoice_id")
+    @GenericGenerator(
+            name = "seq_test_invoice_id",
+            strategy = AcrossSequenceGenerator.STRATEGY,
+            parameters = {
+                    @org.hibernate.annotations.Parameter(name = "sequenceName", value = "seq_test_invoice_id"),
+                    @org.hibernate.annotations.Parameter(name = "allocationSize", value = "1")
+            }
+    )
+    private Long id;
+
+    @NotBlank
+    @Length(max = 200)
+    @Column(name = "name")
+    private String name;
+
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "attachment_id", referencedColumnName = "id")
+    private FileReference attachment;
+
+}
+----
+
+You can find more information about multiple file uploads and moving files to another `FileRepository` while saving in the xref:file-reference/file-reference.adoc[uploading and saving files section].
+
+== Saving files form code
+
+The creation and moving of files can by done by using the `FileManager`.
+The `FileManager` uses the provided `FileRepository` to handle to actual saving of the file.
+When no fileRepository is provided the default fileRepository `LocalFileRepository` is used.
+
+NOTE: The default pathGenerator used by the `FileRepository` is a `DateFormatPathGenerator`. This means by default
+files will be saved using the yyyy/MM/dd path.
+
 .Example storing a file
 [source,java,indent=0]
 [subs="verbatim,quotes,attributes"]
@@ -51,16 +102,31 @@ NOTE: Because a `FileRepository` can have different types of implementations, mo
  To ensure maximum compatibility intermediate stages (using temporary files) or the `InputSteam`/`OutputStream` based methods should be used.
  See the `FileRepository` javadoc for more details.
 
-== Registering a FileRepository
+== Registering a custom FileRepository
 Registering your own `FileRepository` can be done through the (exposed) `FileRepositoryRegistry` bean.
 
 The default implementation will wrap all repositories in a `FileRepositoryDelegate`.
 Consumers can request a hard reference to a specific `FileRepository` using the `FileManager#getRepository()` methods.
 Because they actually get a `FileRepositoryDelegate` reference, the actual implementation can be modified at runtime through the repository registry.
 
+.Add a custom FileRegistry
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Configuration
+public class CustomFileRegistryConfiguration {
+    @Autowired
+    @Qualifier("fileRepositoryRegistry")
+    public void registerS3Repository(FileRepositoryRegistry registry, FileManager fileManager) {
+        registry.registerRepository(new LocalFileRepository("otherRepository", "local-data/rootFolder"));
+    }
+}
 
+----
 
-
+== Amazon S3 support
+FileManager has support build in to store files on a Amazon S3 bucket (https://aws.amazon.com/s3/)
+by using a xref:file-repositories/s3.adoc[AwsS3FileRepository].
 
 
 

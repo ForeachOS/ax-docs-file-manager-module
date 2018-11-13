@@ -1,0 +1,181 @@
+= Uploading and saving files
+
+[[file-reference]]
+== The FileReference entity
+FileManagerModule provides a `FileReference` entity to handle file upload and the actual saving of a physical file. When saving a file the `MultipartFileToFileReferenceConverter` is used
+to convert the file into a `FileReference`. When not overridden the `MultipartFileToFileReferenceConverter` uses the default
+`FileRegistry` to persist the files trough the `FileReferenceService`. If you want to customize the `FileRegistry` that is used
+you can read the section about chaning the <<change-default-fileregistry, default FileRegistry for saving a FileReference>>.
+
+When saving a `FileReference` the physical file always get's persisted in temp storage by default.
+This is so the user doesn't have to re-upload it if there are other validation errors.
+
+NOTE: For more information about what FileManagerModule has to offer when other modules are detected
+ see the sectioin xref:module-relations/relations.adoc[Module relations].
+
+=== Single file upload
+An example for saving a file and linking it to a certain Entity.
+
+.Example storing a file
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Entity
+@Table(name = "test_invoice")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class Invoice extends SettableIdBasedEntity<Invoice> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "seq_test_invoice_id")
+    @GenericGenerator(
+            name = "seq_test_invoice_id",
+            strategy = AcrossSequenceGenerator.STRATEGY,
+            parameters = {
+                    @org.hibernate.annotations.Parameter(name = "sequenceName", value = "seq_test_invoice_id"),
+                    @org.hibernate.annotations.Parameter(name = "allocationSize", value = "1")
+            }
+    )
+    private Long id;
+
+    @NotBlank
+    @Length(max = 200)
+    @Column(name = "name")
+    private String name;
+
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "attachment_id", referencedColumnName = "id")
+    private FileReference attachment;
+
+}
+----
+
+[[file-reference-multiple]]
+=== Uploading multiple files
+The `FileReference` entity can be used to handle multi-file-uploads as well.
+
+.Example storing a file
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Entity
+@Table(name = "test_expense")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class Expense extends SettableIdBasedEntity<Expense> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "seq_test_expense_id")
+    @GenericGenerator(
+            name = "seq_test_expense_id",
+            strategy = AcrossSequenceGenerator.STRATEGY,
+            parameters = {
+                    @org.hibernate.annotations.Parameter(name = "sequenceName", value = "seq_test_expense_id"),
+                    @org.hibernate.annotations.Parameter(name = "allocationSize", value = "1")
+            }
+    )
+    private Long id;
+
+    @NotBlank
+    @Length(max = 200)
+    @Column(name = "name")
+    private String name;
+
+    @NotNull
+    @NotEmpty
+    @ManyToMany
+    @Setter(AccessLevel.NONE)
+    @JoinTable(
+            name = "expense_attachments",
+            joinColumns = @JoinColumn(name = "fr_expense_expense_id"),
+            inverseJoinColumns = @JoinColumn(name = "fr_expense_fr_id")
+    )
+    private List<FileReference> attachments;
+
+    public void setAttachments( List<FileReference> attachments ) {
+        this.attachments = attachments.stream().filter( Objects::nonNull ).collect( Collectors.toList() );
+    }
+}
+----
+
+By default when saving a `FileReference` the default `FileRegistry` is being used.
+The example below shows how the physical file can be moved to a different `FileRegistry` when there are
+no validation errors and the entity is saved. This can configured by overriding the saveConsumer of your
+entity.
+
+.Change the FileRepository to use on save
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Configuration
+@RequiredArgsConstructor
+public class ExpenseEntityConfiguration implements EntityConfigurer {
+    private final FileReferenceService fileReferenceService;
+
+    @Override
+    public void configure(EntitiesConfigurationBuilder entities) {
+        entities.withType(Expense.class)
+                .properties(
+                        props -> props
+                                .property("attachments[]")
+                                .controller(ctl -> ctl
+                                        .withBindingContext(FileReference.class)
+                                        .saveConsumer(
+                                                (ctx, fr) -> fileReferenceService
+                                                        .changeFileRepository(fr.getNewValue(), "permanent", true)
+                                        )
+                                )
+                );
+    }
+}
+----
+
+[[change-default-fileregistry]]
+== Change the default FileRegistry used for persisting a FileReference
+You can override the `FileRegistry` that is used to persist the physical files that are represented by
+a `FileReference`.
+
+.Change the FileRegistry that will be used when saving a FileReference
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Configuration
+public class DefaultFileReferenceFileRepository {
+
+    @Autowired
+    public void changeDefaultFileRegistryForFileReferences(MultipartFileToFileReferenceConverter multipartFileToFileReferenceConverter) {
+        multipartFileToFileReferenceConverter.setRepositoryId("demo");
+    }
+}
+----
+
+
+[[file-reference-properties]]
+== FileReferenceProperties
+Before a `FileReference` get's persisted a `FileReferenceCreationEvent` is emitted that can be used to modify the newly created
+file. It provides a way to configure additional properties through `FileReferenceProperties`. Theses properties can be used to store
+metadata about the file that was uploaded.
+
+.Add FileReferenceProperties to a FileReference
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Configuration
+@RequiredArgsConstructor
+public class CustomFileRegistryConfiguration {
+    private final FileReferencePropertiesService fileReferencePropertiesService;
+
+    @EventListener()
+    public void fileReferenceSaved(FileReferenceCreationEvent fileReferenceCreationEvent) {
+        FileReferenceProperties properties = fileReferenceCreationEvent.getFileReferenceProperties();
+        properties.put("customProperty", "value");
+    }
+}
+----
+
+The `FileReferenceService` will save the `FileReferenceProperties` together with the `FileReference`

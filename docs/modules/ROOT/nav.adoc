@@ -4,6 +4,10 @@
 
 * xref:configuration-properties.adoc[Configuration properties]
 
+* xref:file-reference/file-reference.adoc[Uploading and saving files]
+
+* xref:module-relations/relations.adoc[Module relations]
+
 * xref:file-repositories/index.adoc[Supported file systems]
 ** xref:file-repositories/index.adoc[Local files]
 ** xref:file-repositories/s3.adoc[Amazon S3]
