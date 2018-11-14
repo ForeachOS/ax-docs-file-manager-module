@@ -3,7 +3,9 @@
 [#1-3-0]
 == 1.3.0.RELEASE
 
-* Added xref:file-reference/file-reference.adoc[FileReference] and xref:file-reference/file-reference.adoc#file-reference-properties[FileReferenceProperties] entities
+* Added xref:file-reference/file-reference.adoc[FileReference] and xref:file-reference/file-reference.adoc#file-reference-properties[FileReferenceProperties]
+** FileReference and FileReferenceProperties can be used to store additional information for files.
+** If xref:entity-module::index.adoc[EntityModule] is present, FileReference properties will be rendered as file upload controls.
 
 [#1-2-0]
 == 1.2.0.RELEASE
