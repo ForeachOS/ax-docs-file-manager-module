@@ -14,7 +14,7 @@ The FileManagerModule provides several `FileRepository` implementations by defau
 
 === Saving files
 How files are saved are handled by the different `FileRegistry` implementations. This module provides default implementations
-for local and Amazon S3 Bucket storage.
+for local and Amazon S3 Bucket storage. It's also possible to provide your own `FileRegistry`.
 
 Locally::
 The `LocalFileRepository` provides a way to store the files locally.
@@ -49,9 +49,9 @@ public class CustomFileRegistryConfiguration {
 
 
 === Storing & uploading files
+To handle file upload and persistance the `FileReference` entity  can be used.
 The `FileReference` entity adds an abstraction layer for rendering a `FileUploadFormElement`. It also provides a link
-to the physically saved file. You can use it in your entities to provide a link between your entity and the physical
-file.
+to the physically saved file.
 
 .Example of storing a file linked to an entity
 [source,java,indent=0]
