@@ -5,13 +5,13 @@
 FileManagerModule provides a `FileReference` entity to handle file upload and the actual saving of a physical file. When saving a file the `MultipartFileToFileReferenceConverter` is used
 to convert the file into a `FileReference`. When not overridden the `MultipartFileToFileReferenceConverter` uses the default
 `FileRegistry` to persist the files trough the `FileReferenceService`. If you want to customize the `FileRegistry` that is used
-you can read the section about chaning the <<change-default-fileregistry, default FileRegistry for saving a FileReference>>.
+you can read the section about changing the <<change-default-fileregistry, default FileRegistry for saving a FileReference>>.
 
 When saving a `FileReference` the physical file always get's persisted in temp storage by default despite validation errors.
 This is so the user doesn't have to re-upload the file it if there are other validation errors.
 
 NOTE: For more information about what FileManagerModule has to offer when other modules are detected
- see the sectioin xref:module-relations/relations.adoc[Module relations].
+ see the section xref:module-relations/relations.adoc[Module relations].
 
 === Single file upload
 An example for saving a file and linking it to a certain Entity.
