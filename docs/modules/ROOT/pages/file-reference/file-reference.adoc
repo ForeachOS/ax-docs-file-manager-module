@@ -179,3 +179,95 @@ public class CustomFileRegistryConfiguration {
 ----
 
 The `FileReferenceService` will save the `FileReferenceProperties` together with the `FileReference`
+
+
+== Manually registering a FileReference property
+You can manually register a `FileReference` property on an entity if you don't want to use
+default way of saving the FileReference with hibernate.
+
+.The person entity with a photoId
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Entity
+@Table(name = "test_person")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class Person extends SettableIdBasedEntity<Person> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "seq_test_person_id")
+    @GenericGenerator(
+            name = "seq_test_person_id",
+            strategy = AcrossSequenceGenerator.STRATEGY,
+            parameters = {
+                    @org.hibernate.annotations.Parameter(name = "sequenceName", value = "seq_test_person_id"),
+                    @org.hibernate.annotations.Parameter(name = "allocationSize", value = "1")
+            }
+    )
+    private Long id;
+
+    @NotBlank
+    @Length(max = 200)
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "photo_id")
+    private Long photoId;
+}
+----
+
+There is only a Long defined to hold the fileReferenceId. We use an `EntityConfigurer` to hide that property
+and create a new `FileReference` property.
+
+.Add FileReferenceProperties to a FileReference
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Configuration
+@RequiredArgsConstructor
+public class PersonEntityConfiguration implements EntityConfigurer {
+    private final FileReferenceRepository fileReferenceRepository;
+
+    @Override
+    public void configure(EntitiesConfigurationBuilder entities) {
+        entities.withType(Person.class)
+                .properties(
+                        props -> props
+                                .property("photoId").and()
+                                .property("photo")
+                                .propertyType(FileReference.class)
+                                .displayName("Photo")
+                                .readable(true)
+                                .writable(true)
+                                .hidden(false)
+                                .controller( c -> c.withTarget( Person.class, FileReference.class )
+                                        .valueFetcher( person -> person.getPhotoId() != null ? fileReferenceRepository
+                                                .findOne( person.getPhotoId() ) : null )
+                                        .applyValueConsumer(
+                                                ( person, fileReference ) -> {
+                                                    if ( fileReference.getNewValue() != null && !fileReference.isDeleted() ) {
+                                                        person.setPhotoId( fileReference.getNewValue().getId() );
+                                                    }
+                                                    else {
+                                                        person.setPhotoId( null );
+                                                    }
+                                                } )
+                                )
+                                .attribute(EntityAttributes.FORM_ENCTYPE, FormViewElement.ENCTYPE_MULTIPART)
+                );
+    }
+}
+----
+
+For this example we hide the photoId property in favor of your custom created photo property.
+Our custom photo property has a `FileReference` as propertyType and will implement the controller method
+to handle the correct saving and showing of our photo file.
+The valueFetcher in the controller method is used to transform the photoId into a `FileReference`. The `applyValueConsumer` on the other
+hand is used to set the photoId on save.
+
+NOTE: You have to set the `FORM_ENCTYPE` to `ENCTYPE_MULTIPART` if you are using a custom property.
+
+
