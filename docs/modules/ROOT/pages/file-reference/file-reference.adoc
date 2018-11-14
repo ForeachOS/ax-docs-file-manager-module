@@ -270,6 +270,6 @@ The `applyValueConsumer` on the other hand is used to set the photoId on save.
 
 NOTE: By default when using a `FileReference` the right FORM_ENCTYPE is set.
 If you are using FileReference as a custom property you have to set the `FORM_ENCTYPE`
-to `ENCTYPE_MULTIPART` if you are using a custom property.
+to `ENCTYPE_MULTIPART` yourself.
 
 
