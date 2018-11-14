@@ -1,4 +1,4 @@
-= Uploading and saving files
+= Add metadata to files
 
 [[file-reference-properties]]
 == FileReferenceProperties
