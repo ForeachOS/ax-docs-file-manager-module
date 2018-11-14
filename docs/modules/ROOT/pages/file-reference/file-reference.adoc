@@ -7,14 +7,14 @@ to convert the file into a `FileReference`. When not overridden the `MultipartFi
 `FileRegistry` to persist the files trough the `FileReferenceService`. If you want to customize the `FileRegistry` that is used
 you can read the section about changing the <<change-default-fileregistry, default FileRegistry for saving a FileReference>>.
 
-When saving a `FileReference` the physical file always get's persisted in temp storage by default despite validation errors.
-This is so the user doesn't have to re-upload the file it if there are other validation errors.
+When saving a `FileReference` the physical file always get's persisted in temp storage by default despite of validation errors.
+This is so the user doesn't have to re-upload the file if there are other validation errors.
 
 NOTE: For more information about what FileManagerModule has to offer when other modules are detected
  see the section xref:module-relations/relations.adoc[Module relations].
 
 === Single file upload
-An example for saving a file and linking it to a certain Entity.
+An example for saving a file and linking it to an Entity.
 
 .Example storing a file
 [source,java,indent=0]
@@ -170,7 +170,7 @@ metadata about the file that was uploaded.
 public class CustomFileRegistryConfiguration {
     private final FileReferencePropertiesService fileReferencePropertiesService;
 
-    @EventListener()
+    @EventListener
     public void fileReferenceSaved(FileReferenceCreationEvent fileReferenceCreationEvent) {
         FileReferenceProperties properties = fileReferenceCreationEvent.getFileReferenceProperties();
         properties.put("customProperty", "value");
@@ -178,12 +178,12 @@ public class CustomFileRegistryConfiguration {
 }
 ----
 
-The `FileReferenceService` will save the `FileReferenceProperties` together with the `FileReference`
-
+The `FileReferenceService` will save the `FileReferenceProperties` together with the `FileReference` after
+all events are handled.
 
 == Manually registering a FileReference property
 You can manually register a `FileReference` property on an entity if you don't want to use
-default way of saving the FileReference with hibernate.
+the default way of saving the `FileReference` with hibernate.
 
 .The person entity with a photoId
 [source,java,indent=0]
@@ -219,10 +219,10 @@ public class Person extends SettableIdBasedEntity<Person> {
 }
 ----
 
-There is only a Long defined to hold the fileReferenceId. We use an `EntityConfigurer` to hide that property
-and create a new `FileReference` property.
+There is only a photoId defined to hold the fileReferenceId. We use an `EntityConfigurer` to hide that property
+and create a custom photo property with `FileReference` as propertyType.
 
-.Add FileReferenceProperties to a FileReference
+.Add a custom FileReference property to an entity
 [source,java,indent=0]
 [subs="verbatim,quotes,attributes"]
 ----
@@ -262,12 +262,14 @@ public class PersonEntityConfiguration implements EntityConfigurer {
 }
 ----
 
-For this example we hide the photoId property in favor of your custom created photo property.
+For this example we hide the photoId property in favor of our custom created photo property.
 Our custom photo property has a `FileReference` as propertyType and will implement the controller method
 to handle the correct saving and showing of our photo file.
-The valueFetcher in the controller method is used to transform the photoId into a `FileReference`. The `applyValueConsumer` on the other
-hand is used to set the photoId on save.
+The valueFetcher in the controller method is used to transform the photoId into a `FileReference`.
+The `applyValueConsumer` on the other hand is used to set the photoId on save.
 
-NOTE: You have to set the `FORM_ENCTYPE` to `ENCTYPE_MULTIPART` if you are using a custom property.
+NOTE: By default when using a `FileReference` the right FORM_ENCTYPE is set.
+If you are using FileReference as a custom property you have to set the `FORM_ENCTYPE`
+to `ENCTYPE_MULTIPART` if you are using a custom property.
 
 
