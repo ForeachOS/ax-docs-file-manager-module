@@ -1,0 +1,136 @@
+= FileManager Module
+Steven Gentens, Arne Vandamme, Marc Vanbrabant, Stijn Vanhoof
+:sectanchors:
+:module-version: 0.0.3.RELEASE
+:module-name: FileManagerModule
+:module-artifact: file-manager-module
+:module-url: https://across.foreach.be/modules/FileManagerModule
+:module-javadoc-url: https://across-docs.foreach.be/across-standard-modules/FileManagerModule/0.0.3.RELEASE/javadoc
+
+:!sectnums:
+== About the FileManagerModule
+
+The FileManagerModule provides an abstraction layer for storing and retrieving files in an efficient way.
+Files are uniquely identified using a <<file-descriptor,FileDescriptor>> and stored in a named <<file-repository,FileRepository>>.
+Clients access all files and repositories through the central <<file-manager,FileManager>> bean.
+
+By default the FileManagerModule sets up local directory based file repositories and requires very little configuration.
+
+:sectnums:
+:chapter-number: 0
+
+=== Artifact
+[source,xml,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+	<dependencies>
+		<dependency>
+			<groupId>com.foreach.across.modules</groupId>
+			<artifactId>{module-artifact}</artifactId>
+			<version>{module-version}</version>
+		</dependency>
+	</dependencies>
+----
+
+=== Module dependencies
+.Module dependencies
+|===
+|Module |Type |Description
+
+|`EntityModule`
+|optional
+|Enables the ability to render the fileUpload control.
+
+|`AcrossHibernateJpaModule`
+|optional
+|Enables the ability to persist the `FileReference` entity.
+
+|`PropertiesModule`
+|optional
+|Used to add properties to a file
+
+|===
+
+NOTE: For more information about what FileManagerModule has to offer when other modules are detected
+ see the section xref:module-relations/relations.adoc[Module relations].
+
+:sectnums:
+:chapter-number: 0
+=== Core classes
+
+[[file-descriptor]]
+==== FileDescriptor
+Files are identified by a unique `FileDescriptor` that determines in which backing `FileRepository` a file should be saved or from which it should be retrieved.
+A `FileDescriptor` has a *URI* property that is a globally unique `String` version of the descriptor.
+Any `FileDescriptor` can be serialized to and from its URI.
+
+[[file-repository]]
+==== FileRepository
+A `FileRepository` is identified by a unique *repository id*.
+The first part of a `FileDescriptor` will always contain the repository id.
+How a `FileRepository` stores its files is implementation dependent.
+This could be disk-based storage, database backed or any form of cloud storage.
+The purpose of the `FileManager`, `FileDescriptor` and `FileRepository` interfaces is to provide a flexible way for modules to interact with files, without knowing how or where they are actually persisted.
+
+[[file-manager]]
+==== FileManager
+The `FileManager` service bean (exposed) is the facade to access any `FileRepository`.
+It is the central interface that clients should use for accessing files.
+Using it is pretty straightforward, the interface methods are well-documented and fairly self-explanatory.
+
+=== Default configuration
+The default configuration of the FileManagerModule will automatically create file based repositories in a single root folder (controller by the *fileManagerModule.localRepositoriesRoot* property).
+A new repository will be created when it is accessed for the first time.
+If no explicit repository id is specified for file access, *default* will be used.
+
+:!sectnums:
+== Uploading files
+FileManagerModule provides the `FileReference` entity to handle uploading and saving of files. The `FileReference` entity
+will handle the file persistence and it provides a link between your entity and the physical file.
+
+.Example of storing a file linked to an entity
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+public class Invoice extends SettableIdBasedEntity<Invoice> {
+    private FileReference attachment;
+}
+----
+
+You can find more information about multiple file uploads and moving files to another `FileRepository` while saving in the xref:file-reference/file-reference.adoc[uploading and saving files section].
+
+== Amazon S3 support
+FileManager has support build in to store files on a Amazon S3 bucket (https://aws.amazon.com/s3/)
+by using a xref:file-repositories/s3.adoc[AwsS3FileRepository].
+
+== Saving files form code
+
+The creation and moving of files can by done by using the `FileManager`.
+The `FileManager` uses the provided `FileRepository` to handle to actual saving of the file.
+When no fileRepository is provided the default fileRepository `LocalFileRepository` is used.
+
+NOTE: The default pathGenerator used by the `FileRepository` is a `DateFormatPathGenerator`. This means by default
+files will be saved using the yyyy/MM/dd path.
+
+.Example storing a file
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+// Create a new temporary file
+File tempFile = fileManager.createTempFile();
+// Write data to the temporary file
+writeUploadedImage( tempFile );
+// Move the file into the 'images' repository (this deletes the temp file)
+FileDescriptor fd = fileManager.moveInto( "images", tempFile );
+// Store the unique file descriptor in database
+imageRecord.setFileUri( fd.getUri() );
+----
+
+NOTE: Because a `FileRepository` can have different types of implementations, modify operations on `java.io.File` instances might be limited.
+ To ensure maximum compatibility intermediate stages (using temporary files) or the `InputSteam`/`OutputStream` based methods should be used.
+ See the `FileRepository` javadoc for more details.
+

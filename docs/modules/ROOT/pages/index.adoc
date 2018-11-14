@@ -1,109 +1,36 @@
-= FileManagerModule
-
+= FileManager Module
+== General
 The FileManagerModule provides an abstraction layer for storing and retrieving files in an efficient way.
 Files are uniquely identified using a <<file-descriptor,FileDescriptor>> and stored in a named <<file-repository,FileRepository>>.
 Clients access all files and repositories through the central <<file-manager,FileManager>> bean.
-
 By default the FileManagerModule sets up local directory based file repositories and requires very little configuration.
+The FileManagerModule provides several `FileRepository` implementations by default.
 
-== Default configuration
-The default configuration of the FileManagerModule will automatically create file based repositories in a single root folder (controller by the *fileManagerModule.localRepositoriesRoot* property).
-A new repository will be created when it is accessed for the first time.
-If no explicit repository id is specified for file access, *default* will be used.
+== Features
+* Has default `FileRegistry` implementations for saving files locally or on an Amazon S3 Bucket
+* Provides an abstraction layer for file saving with a `FileManager` service
+* Provides a file upload control (if EntityModule is present) and an abstraction layer for persisting files using the xref:file-reference/file-reference.adoc[FileReference] entity.
+* Add metadata to a file using xref:file-reference/file-metadata.adoc[FileReferenceProperties].
 
-== Core classes
-[[file-descriptor]]
-=== FileDescriptor
-Files are identified by a unique `FileDescriptor` that determines in which backing `FileRepository` a file should be saved or from which it should be retrieved.
-A `FileDescriptor` has a *URI* property that is a globally unique `String` version of the descriptor.
-Any `FileDescriptor` can be serialized to and from its URI.
+=== Saving files
+How files are saved are handled by the different `FileRegistry` implementations. This module provides default implementations
+for local and Amazon S3 Bucket storage.
 
-[[file-repository]]
-=== FileRepository
-A `FileRepository` is identified by a unique *repository id*.
-The first part of a `FileDescriptor` will always contain the repository id.
-How a `FileRepository` stores its files is implementation dependent.
-This could be disk-based storage, database backed or any form of cloud storage.
-The purpose of the `FileManager`, `FileDescriptor` and `FileRepository` interfaces is to provide a flexible way for modules to interact with files, without knowing how or where they are actually persisted.
+Locally::
+The `LocalFileRepository` provides a way to store the files locally.
+This implementation provides a simple implementation that stores all files in a single root directory.
+By default the LocalFileRepository is used as the default FileRegistry to save files.
 
-[[file-manager]]
-=== FileManager
-The `FileManager` service bean (exposed) is the facade to access any `FileRepository`.
-It is the central interface that clients should use for accessing files.
-Using it is pretty straightforward, the interface methods are well-documented and fairly self-explanatory.
+NOTE: If the `pathGenerator` property is set, the `PathGenerator` instance will be used to generate a sub-directory structure to store the files in.
+  The `DateFormatPathGenerator` is a default implementation that uses the current date for creating sub-directories.
+  Using a `PathGenerator` can help distribute the physical files, avoiding OS performance problems when there are too many files in a single directory.
 
-== Uploading files
-FileManagerModule provides the `FileReference` entity to handle uploading and saving of files. By using the following example your attachment
-itself will be persisted along with a reference to the `FileReference` entity.
+S3 bucket::
+The `AwsS3FileRepository` provides a way to stores all files on a Amazon S3 Bucket. More information can be found can be found in the xref:file-repositories/s3.adoc[Amazon S3] section.
 
-.Example of storing a file linked to an entity
-[source,java,indent=0]
-[subs="verbatim,quotes,attributes"]
-----
-@Entity
-@Table(name = "test_invoice")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder(toBuilder = true)
-public class Invoice extends SettableIdBasedEntity<Invoice> {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "seq_test_invoice_id")
-    @GenericGenerator(
-            name = "seq_test_invoice_id",
-            strategy = AcrossSequenceGenerator.STRATEGY,
-            parameters = {
-                    @org.hibernate.annotations.Parameter(name = "sequenceName", value = "seq_test_invoice_id"),
-                    @org.hibernate.annotations.Parameter(name = "allocationSize", value = "1")
-            }
-    )
-    private Long id;
-
-    @NotBlank
-    @Length(max = 200)
-    @Column(name = "name")
-    private String name;
-
-    @NotNull
-    @ManyToOne
-    @JoinColumn(name = "attachment_id", referencedColumnName = "id")
-    private FileReference attachment;
-
-}
-----
-
-You can find more information about multiple file uploads and moving files to another `FileRepository` while saving in the xref:file-reference/file-reference.adoc[uploading and saving files section].
-
-== Saving files form code
-
-The creation and moving of files can by done by using the `FileManager`.
-The `FileManager` uses the provided `FileRepository` to handle to actual saving of the file.
-When no fileRepository is provided the default fileRepository `LocalFileRepository` is used.
-
-NOTE: The default pathGenerator used by the `FileRepository` is a `DateFormatPathGenerator`. This means by default
-files will be saved using the yyyy/MM/dd path.
-
-.Example storing a file
-[source,java,indent=0]
-[subs="verbatim,quotes,attributes"]
-----
-// Create a new temporary file
-File tempFile = fileManager.createTempFile();
-// Write data to the temporary file
-writeUploadedImage( tempFile );
-// Move the file into the 'images' repository (this deletes the temp file)
-FileDescriptor fd = fileManager.moveInto( "images", tempFile );
-// Store the unique file descriptor in database
-imageRecord.setFileUri( fd.getUri() );
-----
-
-NOTE: Because a `FileRepository` can have different types of implementations, modify operations on `java.io.File` instances might be limited.
- To ensure maximum compatibility intermediate stages (using temporary files) or the `InputSteam`/`OutputStream` based methods should be used.
- See the `FileRepository` javadoc for more details.
-
-== Registering a custom FileRepository
-Registering your own `FileRepository` can be done through the (exposed) `FileRepositoryRegistry` bean.
+Custom::
+You can determine how your physical files are persisted by registering your own `FileRepository`.
+This can be done through the `FileRepositoryRegistry` bean.
 
 The default implementation will wrap all repositories in a `FileRepositoryDelegate`.
 Consumers can request a hard reference to a specific `FileRepository` using the `FileManager#getRepository()` methods.
@@ -124,14 +51,24 @@ public class CustomFileRegistryConfiguration {
 
 ----
 
-== Amazon S3 support
-FileManager has support build in to store files on a Amazon S3 bucket (https://aws.amazon.com/s3/)
-by using a xref:file-repositories/s3.adoc[AwsS3FileRepository].
 
+=== Storing & uploading files
+The `FileReference` entity adds an abstraction layer for rendering a `FileUploadFormElement`. It also provides a link
+to the physically saved file. You can use it in your entities to provide a link between your entity and the physical
+file.
 
+.Example of storing a file linked to an entity
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+public class Invoice extends SettableIdBasedEntity<Invoice> {
+    private FileReference attachment;
+}
+----
 
-
-
-
-
+You can find more information and implementation examples in the xref:file-reference/file-reference.adoc[FileReference section].
 

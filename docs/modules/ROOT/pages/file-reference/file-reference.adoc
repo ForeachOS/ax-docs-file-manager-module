@@ -10,9 +10,6 @@ you can read the section about changing the <<change-default-fileregistry, defau
 When saving a `FileReference` the physical file always get's persisted in temp storage by default despite of validation errors.
 This is so the user doesn't have to re-upload the file if there are other validation errors.
 
-NOTE: For more information about what FileManagerModule has to offer when other modules are detected
- see the section xref:module-relations/relations.adoc[Module relations].
-
 === Single file upload
 An example for saving a file and linking it to an Entity.
 
@@ -153,33 +150,6 @@ public class DefaultFileReferenceFileRepository {
     }
 }
 ----
-
-
-[[file-reference-properties]]
-== FileReferenceProperties
-Before a `FileReference` get's persisted a `FileReferenceCreationEvent` is emitted that can be used to modify the newly created
-file. It provides a way to configure additional properties through `FileReferenceProperties`. Theses properties can be used to store
-metadata about the file that was uploaded.
-
-.Add FileReferenceProperties to a FileReference
-[source,java,indent=0]
-[subs="verbatim,quotes,attributes"]
-----
-@Configuration
-@RequiredArgsConstructor
-public class CustomFileRegistryConfiguration {
-    private final FileReferencePropertiesService fileReferencePropertiesService;
-
-    @EventListener
-    public void fileReferenceSaved(FileReferenceCreationEvent fileReferenceCreationEvent) {
-        FileReferenceProperties properties = fileReferenceCreationEvent.getFileReferenceProperties();
-        properties.put("customProperty", "value");
-    }
-}
-----
-
-The `FileReferenceService` will save the `FileReferenceProperties` together with the `FileReference` after
-all events are handled.
 
 == Manually registering a FileReference property
 You can manually register a `FileReference` property on an entity if you don't want to use

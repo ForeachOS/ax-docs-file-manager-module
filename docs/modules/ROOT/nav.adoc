@@ -1,12 +1,12 @@
-* xref:index.adoc[Quick start]
+* xref:quick-start.adoc[Quick start]
 * xref:releases/index.adoc[Releases]
 ** xref:releases/1.x.adoc[1.x]
 
 * xref:configuration-properties.adoc[Configuration properties]
 
 * xref:file-reference/file-reference.adoc[Uploading and saving files]
+* xref:file-reference/file-metadata.adoc[Add metadata to files]
 
-* xref:module-relations/relations.adoc[Module relations]
 
 * xref:file-repositories/index.adoc[Supported file systems]
 ** xref:file-repositories/index.adoc[Local files]

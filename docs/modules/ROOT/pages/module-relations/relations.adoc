@@ -1,7 +1,0 @@
-= Module relations
-
-On overview of additional features FileManagerModule provides when other modules are present
-
-== Entity module
-FileManagerModule provides a default `FileReferenceViewElementLookupStrategy` and `FileReferenceViewElementBuilderFactory` that can be picked up by
-EntityModule to handle the rendering of the fileUpload controls.
