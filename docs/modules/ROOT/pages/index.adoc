@@ -19,11 +19,7 @@ for local and Amazon S3 Bucket storage.
 Locally::
 The `LocalFileRepository` provides a way to store the files locally.
 This implementation provides a simple implementation that stores all files in a single root directory.
-By default the LocalFileRepository is used as the default FileRegistry to save files.
-
-NOTE: If the `pathGenerator` property is set, the `PathGenerator` instance will be used to generate a sub-directory structure to store the files in.
-  The `DateFormatPathGenerator` is a default implementation that uses the current date for creating sub-directories.
-  Using a `PathGenerator` can help distribute the physical files, avoiding OS performance problems when there are too many files in a single directory.
+More information can be found in the xref:file-repositories/index.adoc[Supported file system section].
 
 S3 bucket::
 The `AwsS3FileRepository` provides a way to stores all files on a Amazon S3 Bucket. More information can be found can be found in the xref:file-repositories/s3.adoc[Amazon S3] section.
