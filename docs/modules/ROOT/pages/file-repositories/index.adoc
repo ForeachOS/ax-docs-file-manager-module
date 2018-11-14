@@ -9,7 +9,3 @@ Simple implementation that stores all files in a single root directory.
 If the `pathGenerator` property is set, the `PathGenerator` instance will be used to generate a sub-directory structure to store the files in.
   The `DateFormatPathGenerator` is a default implementation that uses the current date for creating sub-directories.
   Using a `PathGenerator` can help distribute the physical files, avoiding OS performance problems when there are too many files in a single directory.
-
-== AwsS3FileRepository
-Implementation that stores all files on a Amazon S3 Bucket.
-A howto can be found in the xref:file-repositories/s3.adoc[Amazon S3] section.
