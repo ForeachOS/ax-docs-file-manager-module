@@ -7,8 +7,8 @@ to convert the file into a `FileReference`. When not overridden the `MultipartFi
 `FileRegistry` to persist the files trough the `FileReferenceService`. If you want to customize the `FileRegistry` that is used
 you can read the section about chaning the <<change-default-fileregistry, default FileRegistry for saving a FileReference>>.
 
-When saving a `FileReference` the physical file always get's persisted in temp storage by default.
-This is so the user doesn't have to re-upload it if there are other validation errors.
+When saving a `FileReference` the physical file always get's persisted in temp storage by default despite validation errors.
+This is so the user doesn't have to re-upload the file it if there are other validation errors.
 
 NOTE: For more information about what FileManagerModule has to offer when other modules are detected
  see the sectioin xref:module-relations/relations.adoc[Module relations].
