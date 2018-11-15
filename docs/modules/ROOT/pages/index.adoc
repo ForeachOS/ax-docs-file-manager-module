@@ -49,7 +49,7 @@ public class CustomFileRepositoryConfiguration {
 
 
 === Storing & uploading files
-To handle file upload and persistance the `FileReference` entity  can be used.
+To handle file upload and persistence the `FileReference` entity  can be used.
 The `FileReference` entity adds an abstraction layer for rendering a `FileUploadFormElement`. It also provides a link
 to the physically saved file.
 
