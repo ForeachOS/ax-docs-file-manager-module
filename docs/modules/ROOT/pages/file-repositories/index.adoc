@@ -1,6 +1,6 @@
 = LocalFileRepository
 
-By default the `LocalFileRepository` is used as the default `FileRegistry to save files. It's a simple implementation
+By default the `LocalFileRepository` is used as the default `FileRepository` to save files. It's a simple implementation
 that stores all files in a single root directory.
 
 NOTE: If the `pathGenerator` property is set, the `PathGenerator` instance will be used to generate a sub-directory structure to store the files in.

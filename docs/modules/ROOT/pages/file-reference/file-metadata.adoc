@@ -12,7 +12,7 @@ metadata about the file that was uploaded.
 ----
 @Configuration
 @RequiredArgsConstructor
-public class CustomFileRegistryConfiguration {
+public class CustomFileRepositoryConfiguration {
     private final FileReferencePropertiesService fileReferencePropertiesService;
 
     @EventListener

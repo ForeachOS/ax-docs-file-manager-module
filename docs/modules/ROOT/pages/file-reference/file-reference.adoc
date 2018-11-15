@@ -4,8 +4,8 @@
 == The FileReference entity
 FileManagerModule provides a `FileReference` entity to handle file upload and the actual saving of a physical file. When saving a file the `MultipartFileToFileReferenceConverter` is used
 to convert the file into a `FileReference`. When not overridden the `MultipartFileToFileReferenceConverter` uses the default
-`FileRegistry` to persist the files trough the `FileReferenceService`. If you want to customize the `FileRegistry` that is used
-you can read the section about changing the <<change-default-fileregistry, default FileRegistry for saving a FileReference>>.
+`FileRepository` to persist the files trough the `FileReferenceService`. If you want to customize the `FileRepository` that is used
+you can read the section about changing the <<change-default-filerepository, default FileRegistry for saving a FileReference>>.
 
 When saving a `FileReference` the physical file always get's persisted in temp storage by default despite of validation errors.
 This is so the user doesn't have to re-upload the file if there are other validation errors.
@@ -100,8 +100,8 @@ public class Expense extends SettableIdBasedEntity<Expense> {
 }
 ----
 
-By default when saving a `FileReference` the default `FileRegistry` is being used.
-The example below shows how the physical file can be moved to a different `FileRegistry` when there are
+By default when saving a `FileReference` the default `FileRepository` is being used.
+The example below shows how the physical file can be moved to a different `FileRepository` when there are
 no validation errors and the entity is saved. This can configured by overriding the saveConsumer of your
 entity.
 
@@ -132,12 +132,12 @@ public class ExpenseEntityConfiguration implements EntityConfigurer {
 }
 ----
 
-[[change-default-fileregistry]]
-== Change the default FileRegistry used for persisting a FileReference
-You can override the `FileRegistry` that is used to persist the physical files that are represented by
+[[change-default-filerepository]]
+== Change the default FileRepository used for persisting a FileReference
+You can override the `FileRepository` that is used to persist the physical files that are represented by
 a `FileReference`.
 
-.Change the FileRegistry that will be used when saving a FileReference
+.Change the FileRepository that will be used when saving a FileReference
 [source,java,indent=0]
 [subs="verbatim,quotes,attributes"]
 ----
@@ -145,7 +145,7 @@ a `FileReference`.
 public class DefaultFileReferenceFileRepository {
 
     @Autowired
-    public void changeDefaultFileRegistryForFileReferences(MultipartFileToFileReferenceConverter multipartFileToFileReferenceConverter) {
+    public void changeDefaultFileRepositoryForFileReferences(MultipartFileToFileReferenceConverter multipartFileToFileReferenceConverter) {
         multipartFileToFileReferenceConverter.setRepositoryId("demo");
     }
 }
