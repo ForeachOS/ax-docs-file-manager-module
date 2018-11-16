@@ -1,5 +1,6 @@
 = FileManager Module
 == General
+
 The FileManagerModule provides an abstraction layer for storing and retrieving files in an efficient way.
 Files are uniquely identified using a <<file-descriptor,FileDescriptor>> and stored in a named <<file-repository,FileRepository>>.
 Clients access all files and repositories through the central <<file-manager,FileManager>> bean.
@@ -7,12 +8,14 @@ By default the FileManagerModule sets up local directory based file repositories
 The FileManagerModule provides several `FileRepository` implementations by default.
 
 == Features
+
 * Has default `FileRepository` implementations for saving files locally or on an Amazon S3 Bucket
 * Provides an abstraction layer for file saving with a `FileManager` service
 * Provides a file upload control (if EntityModule is present) and an abstraction layer for persisting files using the xref:file-reference/file-reference.adoc[FileReference] entity.
 * Add metadata to a file using xref:file-reference/file-metadata.adoc[FileReferenceProperties].
 
 === Saving files
+
 How files are saved are handled by the different `FileRepository` implementations. This module provides default implementations
 for local and Amazon S3 Bucket storage. It's also possible to provide your own `FileRepository`.
 
@@ -49,6 +52,7 @@ public class CustomFileRepositoryConfiguration {
 
 
 === Storing & uploading files
+
 To handle file upload and persistence the `FileReference` entity  can be used.
 The `FileReference` entity adds an abstraction layer for rendering a `FileUploadFormElement`. It also provides a link
 to the physically saved file.
