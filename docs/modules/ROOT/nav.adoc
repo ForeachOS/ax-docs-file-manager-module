@@ -1,13 +1,25 @@
 * xref:quick-start.adoc[Quick start]
+
 * xref:releases/index.adoc[Releases]
 ** xref:releases/1.x.adoc[1.x]
 
 * xref:configuration-properties.adoc[Configuration properties]
+* xref:integration.adoc[Integration with other modules]
 
-* xref:file-reference/file-reference.adoc[Uploading and saving files]
-* xref:file-reference/file-metadata.adoc[Add metadata to files]
-
+* xref:core-concepts/index.adoc[Virtual File System]
+** xref:core-concepts/file-descriptor.adoc[File descriptor]
+** xref:core-concepts/file-manager.adoc[File manager]
+** xref:core-concepts/file-repository.adoc[File repository]
+** xref:core-concepts/file-resource.adoc[File resource]
+** xref:core-concepts/file-reference.adoc[File reference]
 
 * xref:file-repositories/index.adoc[Supported file systems]
-** xref:file-repositories/index.adoc[Local files]
+** xref:file-repositories/local.adoc[Local files]
 ** xref:file-repositories/s3.adoc[Amazon S3]
+
+* xref:file-repositories/expiring.adoc[Temporary files]
+* xref:file-repositories/caching.adoc[File resource caching]
+
+* xref:file-reference/index.adoc[Linking to files]
+** xref:file-reference/file-reference.adoc[Uploading files]
+** xref:file-reference/file-metadata.adoc[Add metadata to files]

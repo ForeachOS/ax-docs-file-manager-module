@@ -17,7 +17,7 @@
 
 UserModule follows a https://semver.org[semantic versioning] scheme.
 
-* xref:releases/1.x.adoc#1-3-1[1.3.1]
+* xref:releases/1.x.adoc#1-4-0[1.4.0]
 * xref:releases/1.x.adoc#1-3-0[1.3.0]
 * xref:releases/1.x.adoc#1-2-0[1.2.0]
 

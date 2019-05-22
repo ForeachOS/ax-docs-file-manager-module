@@ -1,0 +1,7 @@
+= FileResource
+
+use streams!
+
+
+xref:file-repositories/caching.adoc[caching]
+xref:file-repositories/expiring.adoc[expiring]

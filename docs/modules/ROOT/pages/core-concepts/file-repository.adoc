@@ -1,0 +1,10 @@
+= FileRepository
+
+different types.
+
+expiration
+
+== automatic creation of file repository
+
+xref:file-repositories/index.adoc[overview]
+

@@ -1,0 +1,5 @@
+= FileReference
+
+Previous
+
+See xref:file-reference/index.adoc[linking to files] for more information.

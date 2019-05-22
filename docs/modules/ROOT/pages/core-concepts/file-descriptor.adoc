@@ -1,0 +1,110 @@
+= File descriptor
+
+== What is a FileDescriptor?
+A `FileDescriptor` is the URI of a single file resource in the system.
+It can be represented as a string, for example:
+
+ my-repository:my/folder:file.txt
+
+A `FileDescriptor` is made up of several segments:
+
+Repository id::
+The unique id of the `FileRepository` where this file is located (`my-repository`).
+A repository id is always required.
+
+Folder id::
+The id of the folder in the repository where this file is located (`my/folder`).
+A folder is optional.
+
+Filename::
+The name of the file in the specified folder (or root location of the repository if no folder specified).
+In our example the filename is `file.txt`.
+The filename is required, but it does not need to have an extension.
+
+Most characters are allowed in descriptor segments, with the following exceptions:
+
+* colon (:) is not allowed
+* backward slash (\) will always be replaced by forward slash (/)
+* if a string representation contains no folder id segment, forward slash (/) will be used as a folder separator
+
+In the string representation the different segments are separated with a colon.
+
+== FileDescriptor examples
+Different string versions will result in the same `FileDescriptor` when converted.
+
+|===
+|URI |Repository id |Folder id |Filename
+
+|`my-repository:myfile`
+|`my-repository`
+|
+|`myfile`
+
+|`my-repository::myfile`
+|`my-repository`
+|
+|`myfile`
+
+|`my-repository:my/folder:myfile`
+|`my-repository`
+|`my/folder`
+|`myfile`
+
+|`my-repository:my/folder/myfile`
+|`my-repository`
+|`my/folder`
+|`myfile`
+
+|`my-repository:my\folder\myfile`
+|`my-repository`
+|`my/folder`
+|`myfile`
+
+|`my-repository:my:/folder/myfile`
+|`my-repository`
+|`my`
+|`/folder/myfile`
+
+|===
+
+Parsing a string URI to a `FileDescriptor` can be done with `FileDescriptor.of()`.
+
+ FileDescriptor.of( "my-repository:folder:filename" )
+
+Calling `FileDescriptor.toString()` will give you the normalized string representation.
+
+NOTE: The Spring `ConversionService` can automatically convert a `String` to a `FileDescriptor`, making it easy to use in data binding scenarios.
+
+== FileDescriptor and resource URI
+Unlike with regular resource and protocol locations, there is no link between the file descriptor and the physical storage.
+
+The repository id will determine which repository should be used, and its underlying implementation determines how the folder id and filename are interpreted.
+There is no actual requirement for a `FileRepository` implementation to resemble regular file storage.
+
+For example the following resource URI:
+
+ file:/storage/images/logo.png
+
+Could be represented by either of the following file descriptors:
+
+  storage:images:logo.png
+  images:logo.png
+
+Repository with id `storage` would be a `LocalFileRepository` that has `/storage` as root folder.
+Alternatively repository with id `images` could be a `LocalFileRepository` with `/storage/images` as root folder.
+
+.Flexibility
+Storing direct resource URIs has the risk of having to update them whenever the underlying storage changes.
+With file descriptors, you can change the repository implementation without having to update the stored descriptors.
+
+.FileDescriptor as resource URI
+When FileManagerModule is present, a `FileDescriptor` can be used as a resource URI for Spring `Resource` resolving.
+
+The resource URI of file descriptor is the string representation prefixed with `axfs://`.
+
+ applicationContext.getResource( "axfs://my-repository:my/folder:myfile.txt" )
+
+The resources returned will be the actual `FileResource` implementation, which extends Spring's `WritableResource`.
+
+WARNING: Resources can only be resolved if both the `FileManager` and required repositories are available.
+You should pay special attention to this if you want to use FileManager resources during the bootstrap of your application.

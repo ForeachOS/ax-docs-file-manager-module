@@ -1,16 +1,31 @@
-= Module settings
+= Configuration properties
 
+All properties start with the `fileManagerModule.` prefix.
+
+[cols="2,1,4,1",options=header]
 |===
 |Property |Type |Description |Default
 
-|fileManagerModule.tempFolder
+|temp-folder
 |`String`
 |Default directory for temporary files. +
 |_$java.io.tmpdir_
 
-|fileManagerModule.localRepositoriesRoot
-|`String.class`
+|local-repositories-root
+|`String`
 |Root directory in which local repositories will be created.
 |_null_
+
+|expiration.enabled
+|`boolean`
+|Should automatic expiration of file resources be enabled.
+Only relevant for expiring file repository implementations, see temporary files and caching file resources.
+|_false_
+
+|expiration.interval-seconds
+|`int`
+|Number of seconds between expiration runs.
+Set to a lower number if you want file resources to expire faster.
+|_300_
 
 |===

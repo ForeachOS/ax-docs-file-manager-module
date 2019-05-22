@@ -1,0 +1,105 @@
+= FileManager
+
+== What is the FileManager?
+
+The `FileManager` is the central component for translating a `FileDescriptor` into its `FileResource` and as such gaining access to the actual file data..
+
+It allows you to:
+
+* create new file resources (for saving new files)
+* retrieve existing file resources
+* delete file resources
+* check the existence of a file resource
+* create native temporary files (`File` instances)
+* retrieve a specific `FileRepository`
+
+FileManagerModule automatically creates and exposes a single `FileManager` service which can be used throughout the application.
+The single `FileManager` component has an index of all available file repositories.
+
+.Example working with the FileManager
+[source,java,indent=0]
+----
+@Autowired
+private FileManager fileManager;
+
+FileResource newResource = fileManager.createFileResource( "someRepository" ); <1>
+newResource.copyFrom( physicalFile ); <2>
+
+FileResource retrieved = fileManager.getFileResource( physicalFile.getFileDescriptor() ); <3>
+----
+
+<1> create a new `FileResource` in the repository with id `someRepository`
+<2> copy some data to the newly created file resource
+<3> fetch the same `FileResource` again by its assigned `FileDescriptor`
+
+== Creating file resources
+A file resource is uniquely identified by its `FileDescriptor`.
+The latter also determines the actual file repository into which the resource should be stored.
+
+The `FileManager` will route a request to the appropriate repository based on the repository id in the `FileDescriptor`.
+
+A valid `FileDescriptor` will always result in a `FileResource` instance being created.
+This does not mean there is an actual physical item behind it, a physical item is often only created when data is written to the resource.
+
+When you receive a `FileResource` it should have been validated by the backing `FileRepository` and you should be able to write to it.
+If your descriptor would result in an invalid resource, an exception should be thrown.
+
+Checking if physical data for a resource already exists can be done by calling `FileResource.exists()`.
+
+.Examples creating file resources
+[source,java,indent=0]
+----
+fileManager.createFileResource(); <1>
+fileManager.createFileResource( "images" ); <2>
+fileManager.getFileRepository( "images" ).createFileResource(); <3>
+
+fileManager.getFileResource( FileDescriptor.of( "my-repo:myfile.txt" ) ); <4>
+----
+
+<1> create a unique file resource in the _default_ repository - a new, unique `FileDescriptor` will be assigned and this file resource is guaranteed not to exist yet.
+<2> create a unique file resource in the _images_ repository (identical to 3)
+<3> fetch the _images_ repository, and create a unique file resource in it (identical to 2)
+<4> get the `FileResource` for the descriptor, this will potentially create a new resource if it does not exist yet, or return the existing instance
+
+Whenever a repository cannot be found - which is the equivalent of an invalid `FileDescriptor`, an exception should be thrown.
+See the page on xref:core-concepts/file-repository.adoc[file repositories] for information on how to register a `FileRepository`.
+
+== Predefined repository ids
+`FileManager` has 2 predefined repository ids:
+
+`default`::
+  Represents the default file repository.
+`temp`::
+  Represents the repository for temporary files.
+
+== The default file repository
+`FileManager` is an interface which extends `FileRepository`.
+Even though the `FileManager` is a facade to access all known repositories, it is itself also a repository.
+
+Whenever you call a repository method directly on the `FileManager`, that method call will be forwarded to the repository registered with id `default`.
+As such the following two statements are equivalent:
+
+ fileManager.createFileResource()
+ fileManager.getFileRepository( "default" ).createFileResource()
+
+You can change the actual implementation of the default repository by manually registering a `FileRepository` with id `default`.
+The default repository can be any type of implementation.
+
+== Creating temporary files
+`FileManager` can also be used to quickly create native temporary files:
+
+ File file = fileManager.createTempFile();
+
+Behind the scenes `FileManager` will actually create and allocate (initialize with empty data) a new `FileResource` on the `FileRepository` with id `temp`.
+It will then directly return the physical `File` that the resource represents.
+
+The `File` returned is unique, can safely be used for writing to and can be deleted or transferred to another file resource when ready.
+
+The default `temp` repository is a `LocalFileRepository` in the temp folder defined by the `java.io.tmpdir` system property.
+You can change the actual implementation of the default repository by manually registering a `FileRepository` with id `default`.
+
+.Repository limitation
+The `temp` repository is limited by the fact that its `FileResource` it returns must also implement `FileResource.TargetFile` to give access to the physical target `File`.
+As temporary files are almost always used for near storage (performance), a `LocalFileRepository` is mostly used.
+
+NOTE: See the separate section on xref:file-repositories/expiring.adoc[temporary files] for information on regular file repositories with expiration mechanics.

@@ -1,0 +1,11 @@
+= Integration with other modules
+
+AcrossHibernateJpaModule
+
+PropertiesModule
+
+EntityModule
+
+BootstrapUiModule
+
+AdminWebModule
