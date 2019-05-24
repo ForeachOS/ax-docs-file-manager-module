@@ -1,5 +1,12 @@
 = FileResource
 
+== What is a FileResource?
+
+
+== Reading file data
+
+== Writing file data
+
 use streams!
 
 

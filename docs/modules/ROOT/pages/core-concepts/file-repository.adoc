@@ -1,10 +1,126 @@
 = FileRepository
 
-different types.
+== What is a FileRepository?
+Every `FileDescriptor` is attached to a single `FileRepository`, which usually represents a type of physical storage.
+`FileRepository` is the interface hiding the storage specific implementation.
+All repository methods deal with `FileResource` objects.
 
-expiration
+Every file repository has a unique id, which will also be the first segment of file descriptors pointing to the resources in said repository.
+File repositories are expected to be registered in the `FileManager`.
 
-== automatic creation of file repository
+.Example working directly with a FileRepository
+[source,java,indent=0]
+----
+@Autowired
+private FileManager fileManager;
 
-xref:file-repositories/index.adoc[overview]
+FileRepository images = fileManager.getFileRepository( "images" );
+FileResource someImage = images.getFileResource( someImageDescriptor );
+someImage.delete();
+
+File imageFile = new File( "upload/logo.png" );
+FileResource logo = images.createFileResource( imageFile );
+----
+
+== Available file repositories
+FileManagerModule comes with several default implementations for file repositories:
+
+`xref:file-repositories/local.adoc[LocalFileRepository]`::
+  Stores all files as `File` instances in a root folder in the local filesystem.
+
+`xref:file-repositories/s3.adoc[AmazonS3FileRepository]`::
+  Stores all files as AmazonS3 objects in a particular S3 bucket.
+
+`xref:file-repositories/expiring.adoc[ExpiringFileRepository]`::
+  Wraps around another `FileRepository` and adds expiration mechanics to the file resources returned.
+  Mostly useful for temporary files that you want to be automatically removed by the application after a given time.
+
+`xref:file-repositories/caching.adoc[CachingFileRepository]`::
+  Wraps around a specific `FileRepository` and creates a temporary cache version of every file resource, which it stores in another repository.
+  Especially useful for file resources coming from a slow - usually remote - `FileRepository` that you want to cache locally for a given time. +
+   +
+  Unlike the `ExpiringFileRepository` which expires the original file resource, the `CachingFileRepository` only expires the cached version.
+
+See also the separate section on the xref:file-repositories/index.adoc[supported file systems].
+
+== Registering file repositories
+File repositories must be registered in the `FileManager`, this can be done automatically or manually.
+
+.Automatic registration
+Any Spring `FileRepository` will automatically be detected and registered during the bootstrap of the application.
+
+.Registering an AmazonS3 repository as component
+[source,java,indent=0]
+----
+@Bean
+public FileRepository documentRepository( AmazonS3 amazonS3 ) {
+    return AmazonS3FileRepository.builder()
+                              .repositoryId( "documents" )
+                              .amazonS3( amazonS3 )
+                              .bucketName( "my-app-documents" )
+                              .build();
+}
+----
+
+IMPORTANT: File repository beans declared in a module are registered after that module has bootstrapped.
+ If you need early access you should either declare your repositories in the application descriptor, directly in FileManagerModule or register them manually. +
+  +
+ File repositories declared as beans are only registered the first time.
+ If another repository with the same id has already been registered, it will not be replaced.
+ Replacing repositories can only be done through manual registration.
+
+.Manual registration
+You can also manually manage the registered repositories at any point in time, through the `FileRepositoryRegistry`.
+Not only can you add new repositories this way, you can also replace or delete previously registered, as well as retrieve a list of all known repositories.
+
+.Manual registration of a repository
+[source,java,indent=0]
+----
+@Autowired
+public void registerFileRepositories( FileRepositoryRegistry registry ) {
+    registry.registerRepository(
+        LocalFileRepository.builder()
+                           .repositoryId( "documents" )
+                           .rootFolder( "stored-data/documents" )
+                           .build()
+    );
+}
+----
+
+== Auto-creating file repositories
+It is also possible to attach a single `FileRepositoryFactory` to the `FileManager`.
+The factory will be used to create a new `FileRepository` whenever an unknown repository id is requested.
+The factory will only be called on the first request to the repository, the repository returned will then be registered in the `FileManager`.
+
+.Default repository factory
+FileManagerModule comes with a single default `FileRepositoryFactory` implementation which creates local file repositories in a top-level folder.
+
+The default repository factory can be activated by configuring the top-level folder:
+
+ fileManagerModule.local-repositories-root=./my-data
+
+Every repository created will have its own root folder matching the repository id.
+For example, the following file descriptor:
+
+ images:logos:logo.png
+
+would map to:
+
+ ./mydata/images/logos/logo.png
+
+The default repository factory also attaches a path generator to all created file repositories.
+Every generated file resource will be put in a nested path structure based on the current date (`yyyy/MM/dd`).
+See the section on xref:file-repositories/local.adoc[local files] for more details.
+
+.Custom FileRepositoryFactory
+You can attach your own `FileRepositoryFactory` implementation:
+
+* by declaring it as a component in the application descriptor
+* by injecting it as a component directly in the FileManagerModule (using `@ModuleConfiguration`)
+* by configuring it manually on the `FileRepositoryRegistry`
+
+== Implementing your own FileRepository
+See the separate section xref:file-repositories/custom.adoc[on creating a custom file repository].
+
+
 

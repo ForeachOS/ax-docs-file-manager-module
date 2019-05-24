@@ -19,6 +19,7 @@
 
 * xref:file-repositories/expiring.adoc[Temporary files]
 * xref:file-repositories/caching.adoc[File resource caching]
+* xref:file-repositories/custom.adoc[Creating a custom file repository]
 
 * xref:file-reference/index.adoc[Linking to files]
 ** xref:file-reference/file-reference.adoc[Uploading files]

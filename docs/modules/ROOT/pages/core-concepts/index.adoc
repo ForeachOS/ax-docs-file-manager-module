@@ -3,17 +3,23 @@
 FileManagerModule provides a *virtual file system* that application code can work against.
 This is an abstraction which allows applications to store and retrieve files without knowing or having to deal with the underlying storage mechanism.
 
+.FileDescriptor
 Every file is uniquely identifiable by its `FileDescriptor`, this is its URI in the context of FileManagerModule.
+
+.FileRepository
 Every `FileDescriptor` is attached to a single `FileRepository`, which usually represents separate physical storage.
 An application can have many different file repositories, each with a unique id.
 
+.FileManager
 The `FileManager` is a central service which provides access to all known file repositories.
 Usually there is only a single `FileManager` component per application.
 The `FileManager` allows you to save and retrieve files by their `FileDescriptor`.
 
+.FileResource
 Both `FileManager` and `FileRepository` always return `FileResource` implementations.
 This is an additional abstraction through which actual retrieving or saving of file data can be done, as well as performing existence checks.
 
+.FileReference
 All components mentioned so far only deal with the actual storage of file data.
 FileManagerModule also provides a `FileReference` entity which stores file information (metadata) in a relational database, and file data through the `FileManager`.
 
