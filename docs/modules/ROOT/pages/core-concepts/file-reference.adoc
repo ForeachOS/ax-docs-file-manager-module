@@ -1,5 +1,28 @@
 = FileReference
 
-Previous
+== What is a FileReference?
 
-See xref:file-reference/index.adoc[linking to files] for more information.
+`FileDescriptor`, `FileRepository`, `FileResource` and `FileManager` deal with the abstraction layer for physical storage of files.
+`FileReference` on the other hand is a database *entity* which can be used as relation for other entities in the same database schema.
+
+.Example entity linking to a FileReference
+[source,java,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+@Entity
+public class Invoice {
+    ...
+
+    @ManyToOne
+    @JoinColumn(name = "attachment_id", referencedColumnName = "id")
+    private FileReference document;
+}
+----
+
+One of the properties of a `FileReference` is a `FileDescriptor` which represents the physical file stored.
+
+== Building a domain model
+`FileReference` is a construct added to make it easier to integrate a domain model with physical files (represented by `FileResource`).
+It has default integration with modules like EntityModule to enable out-of-the-box uploading of files, taking care of both form control rendering and actual persistence of files and file metadata.
+
+See xref:file-reference/index.adoc[linking to files] for all information on working with `FileReference`.
