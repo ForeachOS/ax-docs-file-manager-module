@@ -1,14 +1,102 @@
 = FileResource
 
 == What is a FileResource?
+A `FileResource` represents a single file being stored in the system.
+It always corresponds to a unique `FileDescriptor` and is handed out (managed) by a `FileRepository`.
 
+`FileResource` is the equivalent of a Java `File` handle in the FileManagerModule virtual file system.
+
+.Example retrieving a file resource
+[source,java,indent=0]
+----
+FileResource fileResource = fileManager.getFileResource( fileDescriptor );
+----
+
+The generic `FileResource` is the interface that applications should use.
+You should avoid using specific implementations directly.
+
+== Checking existence
+A file resource object is only a valid handle to file data.
+It does not mean that there is actual physical data available.
+Checking if physical data exists is done with `exists()`.
+
+ fileResource.exists()
 
 == Reading file data
+You can access the data of a file by accessing the `InputStream`.
+
+WARNING: Accessing the `InputStream` when a file does not exist will usually result in an exception being thrown.
+
+.Example reading the InputStream
+[source,java,indent=0]
+----
+try (InputStream is = fileResource.getInputStream()) {
+    String text = readStreamToString( is );
+}
+----
+
+.Copying file data
+The `FileResource` interface additionally provides some `copyTo()` methods for copying the file data to another target.
+Use these methods when possible as they might have storage specific implementations which could result in improved performance.
+
+.Example copying file data to an output stream
+[source,java,indent=0]
+----
+try (OutputStream outputStream = createSomeOutputStream()) {
+    fileResource.copyTo( outputStream );
+}
+----
+
+.Copying file data to an actual File
+Sometimes you just need access to the file data as an actual `File` instance.
+You can do this using `copyTo(File)`.
+
+.Example copying file data to a temporary file
+[source,java,indent=0]
+----
+File tempFile = fileManager.createTempFile();
+fileResource.copyTo( tempFile );
+----
+
+IMPORTANT: Even though `FileResource` has a method `getFile()`, it should not be used.
+ It is inherited from the generic Spring `Resource` interface but not implemented to avoid misuse when writing data. +
+ +
+ `FileResource.getFile()` should always throw an `UnsupportedOperationException`.
+
 
 == Writing file data
+Writing data to a `FileResource` is done by accessing the `OutputStream`.
+Writing to the `OutputStream` will either create or replace the physical data.
 
-use streams!
+.Example writing to the OutputStream
+[source,java,indent=0]
+----
+try (OutputStream os = fileResource.getOutputStream()) {
+    writeDataToOutputStream( data, os );
+}
+----
 
+.Copying file data from another source
+`FileResource` also provides some direct methods to copy the data from another source.
+Use these when possible as they might yield better overall performance.
 
-xref:file-repositories/caching.adoc[caching]
-xref:file-repositories/expiring.adoc[expiring]
+.Example copying data from a physical file
+[source,java,indent=0]
+----
+File uploadedFile;
+fileResource.copyFrom( uploadedFile, true ); <1>
+----
+<1> This copies the data from _uploadedFile_ into the file resource, attempting to delete the _uploadedFile_ when done.
+Depending on the `FileResource` implementation this might do a physical file move instead of a copy.
+
+.Deleting file data
+Deleting the actual file data is done by calling `delete()`.
+
+ fileResource.delete()
+
+This does not affect the actual `FileResource` object, but calls to `exist()` should return `false` after a successful delete.
+
+== Spring WritableResource
+The `FileResource` interface extends Spring Frameworks' `WritableResource`.
+This means additional methods like `getFilename()`, `contentLength()` and `lastModified()` are available.
+It also implies you can use a `FileResource` anywhere you can use a Spring `Resource`.
