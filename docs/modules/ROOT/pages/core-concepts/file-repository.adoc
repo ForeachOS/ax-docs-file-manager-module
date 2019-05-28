@@ -55,10 +55,10 @@ Any Spring `FileRepository` will automatically be detected and registered during
 @Bean
 public FileRepository documentRepository( AmazonS3 amazonS3 ) {
     return AmazonS3FileRepository.builder()
-                              .repositoryId( "documents" )
-                              .amazonS3( amazonS3 )
-                              .bucketName( "my-app-documents" )
-                              .build();
+                                 .repositoryId( "documents" )
+                                 .amazonS3( amazonS3 )
+                                 .bucketName( "my-app-documents" )
+                                 .build();
 }
 ----
 

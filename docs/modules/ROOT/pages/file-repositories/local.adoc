@@ -1,10 +1,78 @@
 = Local files
 
-LocalFileRepository
+A `LocalFileRepository` stores all its resources in a root directory on the local filesystem.
+Folders are created as actual sub-directories.
+`LocalFileRepository` uses Java `File` objects internally.
 
-By default the `LocalFileRepository` is used as the default `FileRepository` to save files. It's a simple implementation
-that stores all files in a single root directory.
+== Configuring a LocalFileRepository
+To configure a `LocalFileRepository` you assign it a unique repository id and specify the root folder in which to store the physical files.
 
-NOTE: If the `pathGenerator` property is set, the `PathGenerator` instance will be used to generate a sub-directory structure to store the files in.
-  The `DateFormatPathGenerator` is a default implementation that uses the current date for creating sub-directories.
-  Using a `PathGenerator` can help distribute the physical files, avoiding OS performance problems when there are too many files in a single directory.
+.Configuration of a new local file repository
+[source,java,indent=0]
+----
+@Bean
+FileRepository documentRepository() {
+    return LocalFileRepository.builder()
+                              .repositoryId( "documents" ) <1>
+                              .rootFolder( "stored-data/documents" ) <2>
+                              .pathGenerator( DateFormatPathGenerator.YEAR_MONTH_DAY ) <3>
+                              .build();
+}
+----
+<1> the unique repository id, all file descriptors will have this repository id
+<2> all physical files will be stored in the directory `stored-data/documents`, relative to the working directory of the application
+<3> optionally specify a <<path-generator,path generator>> which should be used for generating unique file descriptors
+
+All physical data will be stored in the root folder `stored-data/documents` as separate files.
+The file name will correspond to the `FileDescriptor` file name, any folder id will be created as sub-directory in the root folder.
+
+.Example file descriptor to local file mapping
+[cols="1,3"]
+|===
+|File descriptor |Physical file
+
+|`documents:logo.png`
+|`stored-data/documents/logo.png`
+
+|`documents:images/website:logo.png`
+|`stored-data/documents/images/website.logo.png`
+
+|===
+
+== Generated file descriptors
+The `FileRepository` interface allows you to generate unique file resources without having to manually build a `FileDescriptor`.
+This simply gives you a location where you can store the actual file.
+
+ FileRepository.generateFileDescriptor()
+ FileDescriptor.createFileResource()
+
+`LocalFileRepository` extends `AbstractFileRepository` which uses a UUID to generate a unique file descriptor.
+
+[[path-generator]]
+=== Path generator
+You can optionally configure a `PathGenerator` on a `LocalFileRepository`.
+If the one is set, the `PathGenerator` instance will be used to generate a sub-directory structure to store the generated file resources in.
+
+`DateFormatPathGenerator` is a default implementation that uses the current date for creating sub-directories.
+
+NOTE: Using a `PathGenerator` can help distribute the physical files, avoiding OS performance problems when there are too many files in a single directory.
+
+== Automatic repository creation
+FileManagerModule also has a `LocalFileRepositoryFactory` component.
+This is `FileRepositoryFactory` implementation which creates local file repositories in a top-level folder.
+
+A local repository factory is preconfigured and can be activated by configuring the top-level folder using a property:
+
+ fileManagerModule.local-repositories-root=./my-data
+
+Every repository created will have its own root folder matching the repository id.
+For example, the following file descriptor:
+
+ images:logos:logo.png
+
+would map to:
+
+ ./mydata/images/logos/logo.png
+
+The default repository factory also attaches a `DateFormatPathGenerator` to all created file repositories.
+Every generated file resource will be put in a nested path structure based on the current date (`yyyy/MM/dd`).

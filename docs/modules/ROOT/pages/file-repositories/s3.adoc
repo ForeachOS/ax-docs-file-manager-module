@@ -1,8 +1,10 @@
 = Amazon S3 support
 
-[[s3-repository]]
-== AwsS3FileRepository
-Implementation that stores all files to Amazon S3.  To use this `FileRepository`, add the following Maven dependency to include the Amazon SDK for S3.
+An `AmazonS3FileRepository` stores all its resources in an Amazon S3 bucket.
+Folders will be represented as S3 objects.
+
+== Configuring an AmazonS3FileRepository
+To use this `AmazonS3FileRepository`, you must add the following dependencies to your project:
 
 [source,xml,indent=0]
 [subs="verbatim,quotes,attributes"]
@@ -12,47 +14,65 @@ Implementation that stores all files to Amazon S3.  To use this `FileRepository`
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-aws-core</artifactId>
+            <version>2.1.0.RELEASE</version>
+        </dependency>
 	</dependencies>
 ----
 
+You create a new repository by passing an `AmazonS3` client and specifying a bucket name:
 
-To construct a new `AwsS3FileRepository` add following method:
+.Configuration of a new AmazonS3 repository
 [source,java,indent=0]
-[subs="verbatim,quotes,attributes"]
 ----
-@Autowired
-public void registerS3Repository( FileRepositoryRegistry registry, FileManager fileManager ) {
- registry.registerRepository(new AwsS3FileRepository(bucketName,amazonAccessKey,amazonAccessSecret,fileManager))
+@Bean
+public FileRepository documentRepository( AmazonS3 amazonS3 ) {
+    return AmazonS3FileRepository.builder()
+                                 .repositoryId( "documents" ) <1>
+                                 .amazonS3( amazonS3 ) <2>
+                                 .bucketName( "my-app-documents" ) <3>
+                                 .build();
 }
 ----
 
-The Amazon access keys and secret can be found at https://console.aws.amazon.com/iam. Make sure the corresponding user has permissions to access S3 buckets.
+<1> the unique repository id, all file descriptors will have this repository id
+<2> the Amazon S3 client to use
+<3> the name of the S3 bucket in which to store all objects
 
-If you want to get a `File` reference using `AwsS3FileRepository#getAsFile`,  a local copy of the file wil be kept.
-The provided `fileManager` is used to create temporary files.
+== Uploading multipart files
+The implementation uses infrastructure from https://cloud.spring.io/spring-cloud-aws[Spring Cloud AWS] to support multipart uploads and region redirects.
+By default only one thread is used to upload files, but you can attach a `org.springframework.core.task.TaskExecutor` to the `AmazonS3FileRepository` to enable parallel uploading and enhance overall throughput.
+Amazon S3 support
 
-=== AwsS3FileRepository customization
-To configure another region within AWS where your S3 bucket is located, you can provide this `amazonRegion` in the constuctor.
-By default the `amazonRegion` is `eu-central-1`. Make sure the bucketName refers to a bucket in the given Amazon region.
-
+.Configuration of a TaskExecutor
 [source,java,indent=0]
-[subs="verbatim,quotes,attributes"]
 ----
-@Autowired
-public void registerS3Repository( FileRepositoryRegistry registry, FileManager fileManager ) {
- registry.registerRepository(new AwsS3FileRepository(bucketName,amazonAccessKey,amazonAccessSecret,fileManager,amazonRegion))
+@Bean
+public TaskExecutor s3UploadExecutor() {
+    ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+    taskExecutor.setMaxPoolSize( 10 );
+    taskExecutor.setQueueCapacity( 0 );
+    taskExecutor.setRejectedExecutionHandler( new ThreadPoolExecutor.CallerRunsPolicy() );
+    return taskExecutor;
+}
+
+@Bean
+public FileRepository documentRepository( AmazonS3 amazonS3, TaskExecutor s3UploadExecutor ) {
+    return AmazonS3FileRepository.builder()
+                                 .repositoryId( "documents" )
+                                 .amazonS3( amazonS3 )
+                                 .bucketName( "my-app-documents" )
+                                 .taskExecutor( s3UploadExecutor )
+                                 .build();
 }
 ----
 
-If you want other paths to be generated within your S3 bucket, you can pass a `PathGenerator` instance:
-[source,java,indent=0]
-[subs="verbatim,quotes,attributes"]
-----
-@Autowired
-public void registerS3Repository( FileRepositoryRegistry registry, FileManager fileManager ) {
- registry.registerRepository(new AwsS3FileRepository(bucketName,amazonAccessKey,amazonAccessSecret,fileManager,amazonRegion,pathGenerator))
-}
-----
-By default, no additional paths will be generated and all files will be placed directly in the S3 bucket.
-Because S3 buckets do not know the concept of "sub-directories" and only keys within buckets,  using a `pathGenerator` is not recommended.
-However, it can be useful if you want to switch between other implementations of `FileRepository` later on.
+In this example our task executor does not queue uploads but executes them non-parallel in the calling thread if the threadpool is full.
+
+WARNING: Parallel uploads consume a memory footprint of at least 5MB per thread according to the Spring Cloud AWS documentation.
+Additional memory will be consumed for every item queued in the task executor.
+
+== Path generation
+Like the `xref:file-repositories/local.adoc[LocalFileRepository]`, the `AmazonS3FileRepository` supports a `PathGenerator` for the automatic file resource creation.
