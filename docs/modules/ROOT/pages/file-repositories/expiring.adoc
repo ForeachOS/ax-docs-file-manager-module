@@ -1,1 +1,103 @@
 = Storing temporary files
+
+== Default repository for temporary files
+`FileManager` can be used to quickly create native temporary files:
+
+ File file = fileManager.createTempFile();
+
+Behind the scenes `FileManager` will actually create and allocate (initialize with empty data) a new `FileResource` on the `FileRepository` with id `temp`.
+It will then directly return the physical `File` that the resource represents.
+
+The `File` returned is unique, can safely be used for writing to and can be deleted or transferred to another file resource when ready.
+
+=== Configuring the default temp directory
+The default `temp` repository is a `LocalFileRepository` in the temp folder defined by the `java.io.tmpdir` system property.
+You can also configure a different temp directory by setting the `fileManagerModule.temp-folder` property.
+
+ fileManagerModule.temp-folder=/tmp
+
+=== Custom temp repository
+You can change the actual implementation of the default repository by manually registering a `FileRepository` with id `temp`.
+
+The `temp` repository is limited by the fact that its `FileResource` it returns must also implement `FileResource.TargetFile` to give access to the physical target `File`.
+As temporary files are almost always used for near storage (performance), a `LocalFileRepository` is mostly used.
+
+[#ExpiringFileRepository]
+== ExpiringFileRepository
+Cleanup of a temp directory is often done outside of the scope of the running application.
+FileManagerModule also provides an `ExpiringFileRepository` implementation which can be used to create a repository that automatically removes file resources according to a specific strategy.
+
+=== How it works
+An `ExpiringFileRepository` wraps around another file repository (the target repository) and takes its identity (repository id).
+
+When a file resource is requested the first time, it is fetched from the target repository, wrapped by the `ExpiringFileRepository` and tracked from then on.
+
+Subsequent requests for a tracked file resource will always return the same `FileResource` instance.
+
+.Expiration
+The `ExpiringFileRepository` has an expiration strategy configured, and all tracked items will be checked for expiration when `ExpiringFileRepository.expireTrackedItems()` is executed.
+
+When a file resource expires, it will be deleted (`FileResource.delete()` will be called).
+
+When a file resource is deleted (manually or because it expired), it is no longer tracked.
+
+.Eviction
+You can configure the maximum number of items that should be tracked by the repository.
+
+If the number exceeds this maximum the oldest item will be evicted.
+
+File resources are automatically checked for expiration when evicted but you can configure if they should always expire when evicted.
+
+WARNING: Evicted file resources that have not expired might end up not being deleted by the application.
+
+.File repository shutdown
+When your application shuts down (the `FileManager` is destroyed) all tracked items will be cleared.
+
+You can configure separately if file resources should automatically expire when the repository shuts down.
+
+=== Example configuration
+The following example configures file expiration on locally stored files:
+
+[source,java,indent=0]
+----
+@Bean
+public FileRepository documentRepository() {
+   FileRepository cacheRepository = LocalFileRepository.builder() <1>
+                                                       .repositoryId( "cache" )
+                                                       .rootFolder( "somedir" )
+                                                       .build();
+
+   return ExpiringFileRepository.builder()
+                                .targetFileRepository( cacheRepository ) <2>
+                                .expireOnShutdown( true ) <3>
+                                .expireOnEvict( false ) <4>
+                                .maxItemsToTrack( 50 ) <5>
+                                .timeBasedExpiration( 60 * 60000L, 24 * 60 * 60000L ) <6>
+                                .build();
+}
+----
+
+<1> we declare a local file repository where the actual resources will be stored
+<2> the `ExpiringFileRepository` uses the `cacheRepository` as target, the original file resources will be fetched there and the repository id of our `ExpiringFileRepository` will be `cache`
+<3> all tracked items will expire when the repository shuts down
+<4> tracked items will not automatically expire when they are evicted
+<5> only 50 items will be tracked, after that the oldest item will be evicted
+<6> we configure a default time-based expiration strategy: items expire when they have not been accessed for 60 minutes or if they have existed for more than 24 hours
+
+WARNING: An `ExpiringFileRepository` always wraps another repository and takes its identity.
+You should take care only to register the `ExpiringFileRepository` as otherwise there would be more than one repository with the same id. +
+ +
+For this reason the `LocalFileRepository` is not declared separately as a bean in the example above.
+
+[#cleanup-interval]
+=== Cleanup interval
+When using either expiring or xref:file-repositories/caching.adoc[caching file repositories], you should enable automatic cleanup.
+This is done by setting property:
+
+ fileManagerModule.expiration.enabled=true
+
+This will run the expiration of tracked items for all matching repositories found in the `FileManager`.
+By default the task runs every 5 minutes (300 seconds).
+This interval can be configured with:
+
+ fileManagerModule.expiration.intervalSeconds=600

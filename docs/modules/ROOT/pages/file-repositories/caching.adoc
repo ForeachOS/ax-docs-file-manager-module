@@ -1,1 +1,105 @@
 = Caching file resources
+
+Some repositories - for example remote xref:file-repositories/s3.adoc[Amazon S3 storage] - can be slow to work with and when needing their files frequently it can be beneficial to cache a local version of the file.
+
+The `CachingFileRepository` is a special version of `xref:file-repositories/expiring.adoc#ExpiringFileRepository[ExpiringFileRepository]` that allows you to do just that: wrap around a `FileRepository` and transparently cache the data from its file resources in another repository.
+
+== How CachingFileRepository works
+
+A `CachingFileRepository` wraps around a _target repository_ which holds the original file resources.
+
+Whenever a file resource is requested it will also request a file resource representing the cached version from the specified _cache repository_.
+
+If the cached version does not exist, it will be created the first time the actual file data is accessed.
+
+File data updates immediately update both cache and original file resource, consumers do not need to be aware of a caching repository.
+
+== Cache expiration
+A `CachingFileRepository` is a form of `xref:file-repositories/expiring.adoc#ExpiringFileRepository[ExpiringFileRepository]` where it is the cached version that expires.
+
+The file resource in the target repository will never be modified if the cached version expires.
+
+When working with caching repositories you should also activate the xref:file-repositories/expiring.adoc#cleanup-interval[automatic expiration of tracked items].
+
+== FileDescriptor translation
+A `CachingFileRepository` works with 2 file repositories internally:
+
+* the target repository which holds the original file resource
+* the cache repository which holds the cached version of the file resource
+
+As such a `FileResource` returned by the `CachingFileRepository` internally uses 2 file descriptors representing the same file resource:
+
+* one to the target repository representing the original file
+* one to the cache repository representing the cached version
+
+The `CachingFileRepository` allows you to configure how to determine the file descriptor for the cached version of the file.
+Depending on the cache repository there are 2 typical scenarios:
+
+. The file descriptor to the cached version is generated whenever the original is fetched.
+This implies a separate file resource in the cache repository will be used between application restarts or once an item has been evicted.
+Actual cached versions will never be reused. +
+ +
+Pre-configure this approach with `CachingFileRepository.withGeneratedFileDescriptor()`.
+
+. The file descriptor to the cached version is translated from the original descriptor.
+The same original descriptor will always return the same cached version descriptor.
+Use this approach if you want to maximize reuse of the cached versions, even across application restarts. +
++
+Pre-configure this approach with `CachingFileRepository.withTranslatedFileDescriptor()`.
+In this case the same folder id and filename from the original file descriptor will be used for the cached version.
+
+=== Example configuration
+The following example configures a caching repository:
+
+[source,java,indent=0]
+----
+@Bean
+public FileRepository bigFileRepository( AmazonS3 amazonS3 ) {
+    FileRepository originals = AmazonS3FileRepository.builder() <1>
+                                                     .repositoryId( "bigfiles" )
+                                                     .amazonS3( amazonS3 )
+                                                     .bucketName( "documents" )
+                                                     .build();
+
+    return CachingFileRepository.withTranslatedFileDescriptor() <2>
+                                .maxItemsToTrack( 50 ) <3>
+                                .timeBasedExpiration( 60 * 60000L, 24 * 60 * 60000L ) <4>
+                                .targetFileRepository( originals ) <5>
+                                .cacheRepositoryId( "cache" ) <6>
+                                .build();
+}
+
+@Bean
+FileRepository cacheRepository() { <6>
+    return LocalFileRepository.builder()
+                              .repositoryId( "cache" )
+                              .rootFolder( "local-bigfiles-cache" )
+                              .build();
+}
+----
+
+<1> we declare an Amazon S3 file repository where the original resources will be stored
+<2> the `CachingFileRepository` will generate a file descriptor for the cached version by translating the original file descriptor.
+This also pre-configures the `expireOnEvict` and `expireOnShutdown` properties (in this case both will be `false`).
+<3> only 50 items will be tracked, after that the oldest item will be evicted
+<4> we configure a default time-based expiration strategy: items expire when they have not been accessed for 60 minutes or if they have existed for more than 24 hours
+<5> our `CachingFileRepository` wraps the `originals` repository, takes its identity and uses it for fetching the original file resources.
+As such our repository id will also be `bigfiles`.
+<6> the cached versions will be stored in the repository with id `cache`.
+Instead of directly passing the `FileRepository` instance, we only need to specify the id of the repository.
+The `FileManager` will be used to fetch the repository when it is required.
+
+When setting up a `CachingFileRepository` you usually want to use a fast `FileRepository` implementation for the actual cache.
+It is important that calls to `FileResource.exists()` are fast and cheap on the cached version, as they are done frequently to see if the actual cached data is present.
+
+Usually a `xref:file-repositories/local.adoc[LocalFileRepository]` is used for storing the cached versions.
+
+WARNING: A `CachingFileRepository` always wraps another repository and takes its identity.
+You should take care only to register the `CachingFileRepository` as otherwise there would be more than one repository with the same id. +
+ +
+For this reason the `AmazonS3FileRepository` is not declared separately as a bean in the example above.
+
+
+
+
+

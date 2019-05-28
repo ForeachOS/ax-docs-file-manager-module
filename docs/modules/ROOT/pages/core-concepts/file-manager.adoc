@@ -96,7 +96,7 @@ It will then directly return the physical `File` that the resource represents.
 The `File` returned is unique, can safely be used for writing to and can be deleted or transferred to another file resource when ready.
 
 The default `temp` repository is a `LocalFileRepository` in the temp folder defined by the `java.io.tmpdir` system property.
-You can change the actual implementation of the default repository by manually registering a `FileRepository` with id `default`.
+You can change the actual implementation of the default repository by manually registering a `FileRepository` with id `temp`.
 
 .Repository limitation
 The `temp` repository is limited by the fact that its `FileResource` it returns must also implement `FileResource.TargetFile` to give access to the physical target `File`.
