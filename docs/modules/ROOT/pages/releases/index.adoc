@@ -15,7 +15,7 @@
 
 == Release notes
 
-UserModule follows a https://semver.org[semantic versioning] scheme.
+FileManagerModule follows a https://semver.org[semantic versioning] scheme.
 
 * xref:releases/1.x.adoc#1-4-0[1.4.0]
 * xref:releases/1.x.adoc#1-3-0[1.3.0]
@@ -24,4 +24,23 @@ UserModule follows a https://semver.org[semantic versioning] scheme.
 [[module-dependencies]]
 == Module dependencies
 
-FileManagerModule does not have any dependencies on other modules.
+[options="header",cols="1,1,4"]
+|===
+|Module |Type |Description
+
+|{url-AcrossHibernateModule}[AcrossHibernateJpaModule]
+|optional
+|Required for the `FileReference` domain model (see xref:file-reference/index.adoc[linking to files]).
+
+|{url-PropertiesModule}[PropertiesModule]
+|optional
+|Required for the `FileReference` domain model (see xref:file-reference/index.adoc[linking to files]).
+
+|{url-EntityModule}[EntityModule]
+|optional|In combination with BootstrapUiModule this enables up-/downloading of file references  (see xref:file-reference/index.adoc[linking to files]).
+
+|{url-BootstrapUiModule}[BootstrapUiModule]
+|optional
+|In combination with EntityModule this enables up-/downloading of file references  (see xref:file-reference/index.adoc[linking to files]).
+
+|===

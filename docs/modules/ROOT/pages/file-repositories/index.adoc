@@ -1,4 +1,38 @@
 = Supported file systems
 
-adding a file system
- -> goto custom
+Support for a file system is represented by a `FileRepository`.
+FileManagerModule comes with 2 types of file repositories:
+
+. storage repositories that actual map file resources to an underlying storage provider like the local file system
+. speciale purpose repositories that enhance others with additional behaviors like caching, expiration...
+
+== Supported storage providers
+
+The following storage provider implementations are available:
+
+`xref:file-repositories/local.adoc[LocalFileRepository]`::
+  Stores all files as `File` instances in a root folder in the local filesystem.
+
+`xref:file-repositories/s3.adoc[AmazonS3FileRepository]`::
+  Stores all files as AmazonS3 objects in a particular S3 bucket.
+
+== Special purpose file repositories
+
+Additionally to the storage providers, the following special purpose repositories are also available:
+
+`xref:file-repositories/expiring.adoc[ExpiringFileRepository]`::
+  Wraps around another `FileRepository` and adds expiration mechanics to the file resources returned.
+  Mostly useful for temporary files that you want to be automatically removed by the application after a given time.
+
+`xref:file-repositories/caching.adoc[CachingFileRepository]`::
+  Wraps around a specific `FileRepository` and creates a temporary cache version of every file resource, which it stores in another repository.
+  Especially useful for file resources coming from a slow - usually remote - `FileRepository` that you want to cache locally for a given time. +
+   +
+  Unlike the `ExpiringFileRepository` which expires the original file resource, the `CachingFileRepository` only expires the cached version.
+
+
+== Adding a file system
+
+Adding support for another file system is done by implementing your own `FileRepository` and `FileResource`.
+See the xref:file-repositories/custom.adoc[separate section] for more information.
+

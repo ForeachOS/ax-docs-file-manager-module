@@ -1,1 +1,42 @@
 = Creating a custom FileRepository
+
+Adding your own file repository is done by providing a custom implementation of `FileRepository` which hands out a custom implementation of `FileResource`.
+All consumer code should only work against these 2 interfaces.
+
+FileManagerModule provides some base classes which can be used for custom implementations.
+
+== AbstractFileRepository
+`AbstractFileRepository` is a general purpose base class for file repository implementations.
+Developers usually only need to implement :
+
+ FileResource buildFileResource( FileDescriptor descriptor )
+
+All specifics are to be implemented in the actual `FileResource` implementation.
+
+The `AbstractFileRepository` provides all external repository methods and supports automatic generation of unique file descriptors, with support for a `PathGenerator`.
+
+== AbstractExpiringFileRepository
+`AbstractExpiringFileRepository` can be used as a base class for file repositories that want to use expiration semantics as they are present in `ExpiringFileRepository` and `CachingFileRepository`.
+
+The abstract base class implements the expiration, eviction and shutdown semantics.
+Implementation need to provide the actual `FileResource` implementation and implement what needs to happen upon expiry.
+
+== Temporary file support
+In addition to the `FileResource` interface, a resource can implement the `FileResource.TargetFile` interface as well.
+This interface provides access to a _write-safe_ `File` instance of the resource.
+
+[source,java,indent=0]
+----
+interface TargetFile
+{
+    /**
+     * @return physical file instance
+     */
+    File getTargetFile();
+}
+----
+
+Only repositories providing `TargetFile` implementations can be used as the `temp` repository.
+
+See also the section on xref:file-repositories/expiring.adoc[temporary files].
+

@@ -48,6 +48,8 @@ Use this approach if you want to maximize reuse of the cached versions, even acr
 Pre-configure this approach with `CachingFileRepository.withTranslatedFileDescriptor()`.
 In this case the same folder id and filename from the original file descriptor will be used for the cached version.
 
+If neither of the 2 default scenarios suite your purpose, you can configure a custom `cacheFileResourceResolver` to determine how the cached version `FileResource` should be resolved in the cache repository.
+
 === Example configuration
 The following example configures a caching repository:
 

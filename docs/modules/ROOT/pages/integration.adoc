@@ -1,11 +1,17 @@
 = Integration with other modules
 
-AcrossHibernateJpaModule
+FileManagerModule has no required module dependencies for using the virtual file system.
+Integration with other modules is only relevant when you want to use the `FileReference` entity.
 
-PropertiesModule
+== AcrossHibernateJpaModule and PropertiesModule
 
-EntityModule
+If both {url-AcrossHibernateModule}[AcrossHibernateJpaModule] and {url-PropertiesModule}[PropertiesModule] are present, support for `FileReference` will be activated.
+This provides an entity which represents a file resource in entity relationships and can also be used to store additional file metadata.
 
-BootstrapUiModule
+See the section on xref:file-reference/index.adoc[linking to files] for more information.
 
-AdminWebModule
+== EntityModule and BootstrapUiModule
+If `FileReference` is available and {url-EntityModule}[EntityModule] and {url-BootstrapUiModule}[BootstrapUiModule] are present, support for automatic uploading/downloading of file references through a generated UI will be available.
+
+See the section on xref:file-reference/index.adoc[linking to files] for more information.
+

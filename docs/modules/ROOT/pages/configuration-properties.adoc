@@ -19,7 +19,7 @@ All properties start with the `fileManagerModule.` prefix.
 |expiration.enabled
 |`boolean`
 |Should automatic expiration of file resources be enabled.
-Only relevant for expiring file repository implementations, see temporary files and caching file resources.
+Only relevant for expiring file repository implementations, see xref:file-repositories/expiring.adoc[temporary files] and xref:file-repositories/caching.adoc[caching file resources].
 |_false_
 
 |expiration.interval-seconds
