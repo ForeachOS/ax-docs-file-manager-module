@@ -42,9 +42,8 @@ public FileRepository documentRepository( AmazonS3 amazonS3 ) {
 <3> the name of the S3 bucket in which to store all objects
 
 == Uploading multipart files
-The implementation uses infrastructure from https://cloud.spring.io/spring-cloud-aws[Spring Cloud AWS] to support multipart uploads and region redirects.
+The implementation uses infrastructure from https://cloud.spring.io/spring-cloud-aws[Spring Cloud AWS] to support multipart uploads and region specific bucket redirects.
 By default only one thread is used to upload files, but you can attach a `org.springframework.core.task.TaskExecutor` to the `AmazonS3FileRepository` to enable parallel uploading and enhance overall throughput.
-Amazon S3 support
 
 .Configuration of a TaskExecutor
 [source,java,indent=0]
