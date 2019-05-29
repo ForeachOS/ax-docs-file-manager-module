@@ -4,7 +4,7 @@ Support for a file system is represented by a `FileRepository`.
 FileManagerModule comes with 2 types of file repositories:
 
 . storage repositories that actual map file resources to an underlying storage provider like the local file system
-. speciale purpose repositories that enhance others with additional behaviors like caching, expiration...
+. special purpose repositories that enhance others with additional behaviors like caching, expiration...
 
 == Supported storage providers
 
