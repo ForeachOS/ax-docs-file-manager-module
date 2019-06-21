@@ -4,8 +4,10 @@
 == 1.4.0-SNAPSHOT
 
 * Internal refactoring, addition of `xref:core-concepts/file-resource.adoc[FileResource]` as representation of a stored file and main interface to be used by consumers
+* Added folder concept in the form of `xref:core-concepts/folder-resource.adoc[FolderResource]`
 * Improved xref:file-repositories/s3.adoc[Amazon S3 support] - deprecated `AwsS3Repository` in favour of `AmazonS3Repository`
 * Added special purpose repositories for xref:file-repositories/expiring.adoc[temporary files] and xref:file-repositories/caching.adoc[caching]
+* Added xref:developer-tools.adoc[Admin Web Developer tools section]: file repository browser
 * Fixed some issues with module dependencies
 * Bugfix: moving a file from one repository to another will no longer create a temporary file
 

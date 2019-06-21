@@ -6,6 +6,9 @@ This is an abstraction which allows applications to store and retrieve files wit
 .FileDescriptor
 Every file is uniquely identifiable by its `FileDescriptor`, this is its URI in the context of FileManagerModule.
 
+.FolderDescriptor
+Part of the `FileDescriptor` is the `FolderDescriptor` which uniquely identifies the folder that contains the file.
+
 .FileRepository
 Every `FileDescriptor` is attached to a single `FileRepository`, which usually represents separate physical storage.
 An application can have many different file repositories, each with a unique id.
@@ -18,6 +21,10 @@ The `FileManager` allows you to save and retrieve files by their `FileDescriptor
 .FileResource
 Both `FileManager` and `FileRepository` always return `FileResource` implementations.
 This is an additional abstraction through which actual retrieving or saving of file data can be done, as well as performing existence checks.
+
+.FolderResource
+A file is always located in a single folder, represented by the `FolderResource`.
+The `FolderResource` allows listing or searching files and sub-folders, as well as easy creation of files in the folder.
 
 .FileReference
 All components mentioned so far only deal with the actual storage of file data.

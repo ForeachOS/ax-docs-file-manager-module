@@ -2,7 +2,7 @@
 
 [[file-reference-properties]]
 == FileReferenceProperties
-Before a `FileReference` get's persisted a `FileReferenceCreationEvent` is emitted that can be used to modify the newly created
+Before a `FileReference` gets persisted a `FileReferenceCreationEvent` is emitted that can be used to modify the newly created
 file. It provides a way to configure additional properties through `FileReferenceProperties`. Theses properties can be used to store
 metadata about the file that was uploaded.
 

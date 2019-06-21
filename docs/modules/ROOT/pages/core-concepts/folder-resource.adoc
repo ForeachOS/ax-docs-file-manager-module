@@ -1,0 +1,136 @@
+= FolderResource
+
+== What is a FolderResource?
+A `FolderResource` represents a single folder in the system.
+It always corresponds to a unique `FolderDescriptor` and - just like `FileResource` - is managed by a `FileRepository`.
+
+`FolderResource` is the equivalent of a directory in the FileManagerModule virtual file system.
+
+.Examples retrieving a folder resource
+[source,java,indent=0]
+----
+// retrieving a folder resource directly
+FolderResource folderResource = fileManager.getFolderResource( folderDescriptor );
+
+// retrieving the folder that contains a file resource
+FileResource fileResource = fileManager.getFileResource( fileDescriptor );
+folderResource = fileResource.getFolderResource();
+----
+
+The generic `FolderResource` is the interface that applications should use.
+You should avoid using specific implementations directly.
+
+== Checking existence
+A folder resource object is only a valid handle to a folder.
+Checking if a physical folder exists is done with `exists()`.
+
+ folderResource.exists()
+
+NOTE: Some implementations might always return `true` on calls to `exists()` as standalone folders might not have any meaning for some storage engines.
+
+== Creating a folder
+In most cases it should not be necessary to explicitly create a folder.
+Valid `FileRepository` implementations should transparently create all necessary folder resources when saving files.
+
+If the underlying storage supports it and should you require it, a folder can be created explicitly using:
+
+ boolean created = folderResource.create();
+
+The return value indicates if the folder has been created.
+A return value of `true` implies that subsequent calls to `exists()` should also return `true`.
+
+NOTE: Even if the storage engine does not support the concept of standalone folders, calls to `create()` should not throw an exception but simply return `false`.
+
+== Listing folder content
+
+A folder can contain both file resources and sub folder resources.
+`FolderResource` has several methods to retrieve the folder content.
+
+.Checking if a folder contains resources
+  folderResource.isEmpty()
+
+.Listing the files in a folder
+  Collection<FileResource> files = folderResource.listFiles();
+
+.Listing the sub-folders
+  Collection<FolderResource> folders = folderResource.listFolders();
+
+.Listing both files and sub-folders
+  Collection<FileRepositoryResource> resources = folderResource.listResources( false );
+
+.Listing all files including files in sub-folders
+  Collection<FileResource> files = folderResource.listResources( true, FileResource.class );
+
+== Fetching folder resources
+Single folder resources can be accessed through the relative path.
+
+  FileResource file = folderResource.getFileResource( "myfile.txt" );
+  FolderResource subFolder = folderResource.getFolderResource( "subFolder/" );
+
+Any leading / will be ignored, the example using `subFolder/` is the same as using `/subFolder/`.
+
+The relative path is allowed to contain multiple sub-folders:
+
+  FileResource file = folderResource.getFileResource( "2019/06/15/13h00.log" );
+
+== Searching folder content
+It is possible to search a folder for resources using `findResources()` with a valid ANT pattern.
+This will return all resources matching the pattern.
+
+.Find all files with txt extension anywhere in the folder tree
+  folderResource.findFiles( "/**/*.txt" )
+
+.Find all log files in a sub-folder
+  folderResource.findFiles( "2019/06/15/*.log" )
+
+.Find all folders named tmp that are a child of the direct sub-folders
+  folderResource.findResources( "/*/tmp/", FolderResource.class )
+
+WARNING: Using too many wildcards in ANT patterns can make searching for files in large repositories very slow.
+Always create your pattern as specific as possible.
+
+== Adding a file to a folder
+You add a file to a folder by getting a `FileResource` inside the folder and writing to it.
+
+  FileResource file = folderResource.getFileResource( "subFolder/myfile.txt" );
+  file.copyFrom( data );
+
+For most repository implementations, an actual physical file is only allocated when data is written to the resource.
+
+.Generating a unique file
+If you want to generate a unique `FileResource` to write to, you can use `createFileResource()`.
+
+  FileResource file = folderResource.createFileResource();
+  file.copyFrom( data );
+
+This will create a unique file that can be written to, as a direct child of the folder resource.
+
+== Adding sub-folders
+You create a sub-folder by getting a `FolderResource` inside the folder.
+  FolderResource subFolder = folderResource.getFolderResource( "subFolder/" );
+
+A folder is mainly a grouping structure and not all repository implementations support standalone folders.
+If you explicitly want to create the sub-folder, you can use `create()`.
+
+  subFolder.create();
+
+The return value will be `false` if the folder already exists or could not be created (for example because the storage engine does not support empty folders).
+
+== Deleting a folder
+
+Deleting a folder is done by calling `delete(boolean)`.
+
+ folderResource.delete(true)
+
+The `boolean` argument indicates if the folder should be deleted if it is not empty.
+Argument value `false` will only delete the folder if it is empty, `true` will always delete the folder (deleting first all resources it contains).
+
+.Deleting only the resources in a folder
+If you want to clear the folder but not necessarily remove the folder itself, you can use `deleteChildren()`.
+
+ folderResource.deleteChildren()
+
+This will always delete any child folders, even if they are not empty.
+
+NOTE: As with calls to `create()`, deleting a folder itself might not have much meaning for a particular storage engine.
+Method calls should not throw exceptions but the return value should reflect the most appropriate value from a functional point of view.

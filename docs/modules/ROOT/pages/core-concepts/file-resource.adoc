@@ -22,6 +22,35 @@ Checking if physical data exists is done with `exists()`.
 
  fileResource.exists()
 
+== Creating file resources
+A `FileResource` can always be retrieved as long as the `FileDescriptor` used is valid.
+Physical data is only added when <<writing-data,data is written to the file resource>>.
+
+The `FileRepository` provides some useful methods for automatically generating unique file resources which can be used for writing.
+
+.Creating a random unique FileResource for writing
+  FileResource file = fileRepository.createFileResource();
+
+.Upload an existing File to a new resource and delete the original when done
+  FileResource fileResource = fileRepository.createFileResource( file, true );
+
+.Generating a random unique FileDescriptor for a new FileResource
+[source,java,indent=0]
+----
+FileDescriptor descriptor = fileRepository.generateFileDescriptor();
+FileResource file = fileRepository.getFileResource( descriptor );
+----
+
+.Creating a new FileResource but specifying file extension
+[source,java,indent=0]
+----
+FileDescriptor descriptor = fileRepository.generateFileDescriptor().withExtensionFrom( file );
+FileResource fileResource = fileRepository.getFileResource( descriptor );
+fileResource.copyFrom( file, true ); // upload original file data and delete original when done
+----
+
+TIP: Copying the original file extension can be useful for mime type detection when uploading files.
+
 == Reading file data
 You can access the data of a file by accessing the `InputStream`.
 
@@ -63,7 +92,7 @@ IMPORTANT: Even though `FileResource` has a method `getFile()`, it should not be
  +
  `FileResource.getFile()` should always throw an `UnsupportedOperationException`.
 
-
+[[writing-data]]
 == Writing file data
 Writing data to a `FileResource` is done by accessing the `OutputStream`.
 Writing to the `OutputStream` will either create or replace the physical data.

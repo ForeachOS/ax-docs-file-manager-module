@@ -1,0 +1,71 @@
+= Folder descriptor
+
+== What is a FolderDescriptor?
+FileManagerModule supports folders for organizing file resources.
+A single folder can contain file resources or other folder resources.
+
+A `FolderDescriptor` is the URI of a single folder resource in the system.
+
+Just like `FileDescriptor` it can be represented as a string, for example:
+
+ my-repository:my/folder/
+
+A `FolderDescriptor` is made up of two segments:
+
+Repository id::
+The unique id of the `FileRepository` where this file is located (`my-repository`).
+A repository id is always required.
+
+Folder id::
+The id of the folder in the repository.
+
+Most characters are allowed in descriptor segments, with the following exceptions:
+
+* colon (:) is not allowed
+* backward slash (\) will always be replaced by forward slash (/)
+
+In the string representation the different segments are separated with a colon.
+
+== FolderDescriptor examples
+
+|===
+|URI |Repository id |Folder id
+
+|`my-repository:my/folder/`
+|`my-repository`
+|`my/folder`
+
+|`my-repository:/`
+|`my-repository`
+|
+
+|===
+
+NOTE: A folder descriptor URI should always end with a training forward slash (/).
+
+Parsing a string URI to a `FolderDescriptor` can be done with `FolderDescriptor.of()`.
+
+ FolderDescriptor.of( "my-repository:folder/" )
+
+Calling `FolderDescriptor.toString()` will give you the normalized string representation.
+
+NOTE: The Spring `ConversionService` can automatically convert a `String` to a `FolderDescriptor`, making it easy to use in data binding scenarios.
+
+== Root folder
+Every `FileRepository` has a virtual root folder, in which the file resources without a specific folder id will be located.
+The folder id of a root folder is always `/`.
+
+ repository-id:/
+
+A descriptor for a root folder can be created using `FolderDescriptor.rootFolder( "repository-id" )`.
+
+== Retrieving a FolderDescriptor
+A `FolderDescriptor` is always part of a `FileDescriptor` and can be retrieved with `FileDescriptor.getFolderDescriptor()`.
+
+Whereas `FileDescriptor.getFolderId()` might return a `null` value for the root folder, a `FolderDescriptor` will never be `null`.
+
+=== Parent folder descriptor
+The descriptor contains the entire folder hierarchy as path segments separated with a forward slash (/).
+
+The descriptor of the parent folder can be retrieved using `FolderDescriptor.getParentFolderDescriptor()`.
+The latter returns an `Optional<FolderDescriptor>` which will be empty if the current descriptor represents the root folder of the repository.

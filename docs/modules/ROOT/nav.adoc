@@ -8,9 +8,11 @@
 
 * xref:core-concepts/index.adoc[Virtual File System]
 ** xref:core-concepts/file-descriptor.adoc[File descriptor]
+** xref:core-concepts/folder-descriptor.adoc[Folder descriptor]
 ** xref:core-concepts/file-manager.adoc[File manager]
 ** xref:core-concepts/file-repository.adoc[File repository]
 ** xref:core-concepts/file-resource.adoc[File resource]
+** xref:core-concepts/folder-resource.adoc[Folder resource]
 ** xref:core-concepts/file-reference.adoc[File reference]
 
 * xref:file-repositories/index.adoc[Supported file systems]
@@ -24,3 +26,5 @@
 * xref:file-reference/index.adoc[Linking to files]
 ** xref:file-reference/file-reference.adoc[Uploading files]
 ** xref:file-reference/file-metadata.adoc[Add metadata to files]
+
+* xref:developer-tools.adoc[Developer tools]

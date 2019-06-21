@@ -15,6 +15,7 @@ A repository id is always required.
 Folder id::
 The id of the folder in the repository where this file is located (`my/folder`).
 A folder is optional.
+If none is specified, the root folder of the owning repository will be used.
 
 Filename::
 The name of the file in the specified folder (or root location of the repository if no folder specified).
@@ -60,11 +61,6 @@ Different string versions will result in the same `FileDescriptor` when converte
 |`my/folder`
 |`myfile`
 
-|`my-repository:my:/folder/myfile`
-|`my-repository`
-|`my`
-|`/folder/myfile`
-
 |===
 
 Parsing a string URI to a `FileDescriptor` can be done with `FileDescriptor.of()`.
@@ -74,6 +70,17 @@ Parsing a string URI to a `FileDescriptor` can be done with `FileDescriptor.of()
 Calling `FileDescriptor.toString()` will give you the normalized string representation.
 
 NOTE: The Spring `ConversionService` can automatically convert a `String` to a `FileDescriptor`, making it easy to use in data binding scenarios.
+
+== File extension
+A `FileDescriptor` optionally has a file extension.
+The extension is simply the fragment after the last `.` of the filename segment.
+
+    FileDescriptor descriptor = FileDescriptor.of( "my-repository:folder:filename.txt" );
+    String extension = descriptor.getExtension(); // would be txt
+
+File extensions are often used for automatic mime type detection.
+
+If a filename has no extension, the return value for `FileDescriptor.getExtension()` will be an empty string.
 
 == FileDescriptor and resource URI
 Unlike with regular resource and protocol locations, there is no link between the file descriptor and the physical storage.
@@ -103,6 +110,7 @@ When FileManagerModule is present, a `FileDescriptor` can be used as a resource 
 The resource URI of file descriptor is the string representation prefixed with `axfs://`.
 
  applicationContext.getResource( "axfs://my-repository:my/folder:myfile.txt" )
+ applicationContext.getResources( "axfs://my-repository:my/folder/my-resource-*.txt" )
 
 The resources returned will be the actual `FileResource` implementation, which extends Spring's `WritableResource`.
 

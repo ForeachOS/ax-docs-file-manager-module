@@ -1,25 +1,48 @@
 = Creating a custom FileRepository
 
-Adding your own file repository is done by providing a custom implementation of `FileRepository` which hands out a custom implementation of `FileResource`.
+Adding your own file repository is done by providing a custom implementation of `FileRepository` which hands out a custom implementation of `FileResource` of `FolderResource`.
 All consumer code should only work against these 2 interfaces.
 
-FileManagerModule provides some base classes which can be used for custom implementations.
+== Guidelines for FileResource and FolderResource
 
-== AbstractFileRepository
+Valid `FileRepository` implementations should adhere to the following conventions, no matter the underlying storage engine:
+
+* `FileResource` and `FolderResource` instances must be returned if they can potentially be created.
+The actual _existence_ of resources should be checked with calls to `exists()`.
+* `FileResource` writing should never fail on the creation of intermediate folder resources.
+The latter should be created automatically when writing to a file resource.
+* Calls to `exists()` should return `true` if the resource exists from a consumer point of view.
+This usually means that the contents of a folder can be queried without throwing exceptions. +
+ +
+This is especially relevant for storage engines the do not truly support standalone folders (like xref:file-repositories/s3.adoc[Amazon S3]).
+* Calls to `FolderResource.create()` should return `true` only if the storage engine created the actual folder.
+If `create()` was `true`, subsequent calls to `exists()` should return `true` as well.
+* Calls to `FolderResource.create()` should return `false` if the storage engine does not support standalone folders.
+An exception should never be thrown in this case.
+* Calls to `FolderResource.delete(boolean)` or `FileResource.delete()` should not throw an exception if delete failed, but return `false` instead.
+
+Further implementation details can be found in the Javadoc attached to the interfaces involved.
+
+== Useful base classes
+
+FileManagerModule provides some classes which can be used as a base for custom implementations.
+
+=== AbstractFileRepository
 `AbstractFileRepository` is a general purpose base class for file repository implementations.
 Developers usually only need to implement :
 
- FileResource buildFileResource( FileDescriptor descriptor )
+ FileResource buildFileResource( FileDescriptor descriptor );
+ FolderResource buildFolderResource( FolderDescriptor descriptor );
 
-All specifics are to be implemented in the actual `FileResource` implementation.
+All specifics are to be implemented in the actual `FileResource` and `FolderResource` implementation.
 
 The `AbstractFileRepository` provides all external repository methods and supports automatic generation of unique file descriptors, with support for a `PathGenerator`.
 
-== AbstractExpiringFileRepository
+=== AbstractExpiringFileRepository
 `AbstractExpiringFileRepository` can be used as a base class for file repositories that want to use expiration semantics as they are present in `ExpiringFileRepository` and `CachingFileRepository`.
 
 The abstract base class implements the expiration, eviction and shutdown semantics.
-Implementation need to provide the actual `FileResource` implementation and implement what needs to happen upon expiry.
+Implementations need to provide the actual `FileResource` implementation and implement what needs to happen upon expiry.
 
 == Temporary file support
 In addition to the `FileResource` interface, a resource can implement the `FileResource.TargetFile` interface as well.
