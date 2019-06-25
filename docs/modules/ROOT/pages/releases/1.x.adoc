@@ -3,6 +3,27 @@
 [#1-4-0]
 == 1.4.0-SNAPSHOT
 
+=== Breaking changes
+xref:file-repositories/s3.adoc[Amazon S3 support] now also requires `spring-cloud-aws-core` alongside the Amazon SDK.
+
+[source,xml,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+	<dependencies>
+		<dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-aws-core</artifactId>
+            <version>2.1.0.RELEASE</version>
+        </dependency>
+	</dependencies>
+----
+
+=== Changelist
+
 * Internal refactoring, addition of `xref:core-concepts/file-resource.adoc[FileResource]` as representation of a stored file and main interface to be used by consumers
 * Added folder concept in the form of `xref:core-concepts/folder-resource.adoc[FolderResource]`
 * Improved xref:file-repositories/s3.adoc[Amazon S3 support] - deprecated `AwsS3Repository` in favour of `AmazonS3Repository`
