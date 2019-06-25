@@ -76,17 +76,15 @@ Additional memory will be consumed for every item queued in the task executor.
 Amazon S3 uses a common key prefix as a folder concept for grouping objects.
 If also supports the optional creation of an actual folder object, this is an object name with a trailing slash (`/`).
 
-From a FileManagerModule perspective `FolderResource` is fully supported, with the following important sidenotes:
+From a FileManagerModule perspective `FolderResource` is fully supported, with the following important side notes:
 
-* calls to `FolderResource.exists()` will always return `true` even if there is no explicit S3 object naming it
+* calls to `FolderResource.exists()` will always return `true` even if there is no explicit S3 object matching the folder name
 ** querying such a folder will simply return the objects starting with the folder name as prefix
 * calls to `FolderResource.create()` will create an explicit S3 object matching the folder name
 ** `true` will be returned if the object was created (did not yet exist)
 * calls to `FolderResource.delete(false)` will only delete the S3 object should it exist, but will keep all objects starting with that folder prefix
 ** `deleteChildren()` will delete the objects starting with the folder prefix, but keep the folder object if it exists
 ** `delete(true)` will delete both
-
-Path separateFolders will be represented as S3 objects.
 
 == Path generation
 Like the `xref:file-repositories/local.adoc[LocalFileRepository]`, the `AmazonS3FileRepository` supports a `PathGenerator` for the automatic file resource creation.
