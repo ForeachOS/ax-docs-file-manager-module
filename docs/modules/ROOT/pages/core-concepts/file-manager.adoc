@@ -2,7 +2,7 @@
 
 == What is the FileManager?
 
-The `FileManager` is the central component for translating a `FileDescriptor` into its `FileResource` and as such gaining access to the actual file data..
+The `FileManager` is the central component for translating a `FileDescriptor` into its `FileResource` and as such gaining access to the actual file data.
 
 It allows you to:
 
@@ -99,7 +99,7 @@ The default `temp` repository is a `LocalFileRepository` in the temp folder defi
 You can change the actual implementation of the default repository by manually registering a `FileRepository` with id `temp`.
 
 .Repository limitation
-The `temp` repository is limited by the fact that its `FileResource` it returns must also implement `FileResource.TargetFile` to give access to the physical target `File`.
+The `temp` repository is limited by the fact that the `FileResource` it returns must also implement `FileResource.TargetFile` to give access to the physical target `File`.
 As temporary files are almost always used for near storage (performance), a `LocalFileRepository` is mostly used.
 
 NOTE: See the separate section on xref:file-repositories/expiring.adoc[temporary files] for information on regular file repositories with expiration mechanics.
