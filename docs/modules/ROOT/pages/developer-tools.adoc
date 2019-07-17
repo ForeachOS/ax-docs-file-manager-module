@@ -6,6 +6,6 @@ It allows you to browse the files and folders of any registered `FileRepository`
 
 Files can be opened in the browser or downloaded through the UI.
 
-WARNING: The development browser has no form of caching and security.
-Browsing large repositories with many files in a single folder can be slow.
+WARNING: Only use the development browser for developer testing as it is neither optimized for performance, nor secured against illegal access.
+
 

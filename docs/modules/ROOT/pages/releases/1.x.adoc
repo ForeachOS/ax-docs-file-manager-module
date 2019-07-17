@@ -1,7 +1,7 @@
 = 1.x.x release notes
 
 [#1-4-0]
-== 1.4.0-SNAPSHOT
+== 1.4.0.RELEASE
 
 === Breaking changes
 xref:file-repositories/s3.adoc[Amazon S3 support] now also requires `spring-cloud-aws-core` alongside the Amazon SDK.
