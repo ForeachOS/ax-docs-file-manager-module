@@ -107,6 +107,7 @@ This will create a unique file that can be written to, as a direct child of the 
 
 == Adding sub-folders
 You create a sub-folder by getting a `FolderResource` inside the folder.
+
   FolderResource subFolder = folderResource.getFolderResource( "subFolder/" );
 
 A folder is mainly a grouping structure and not all repository implementations support standalone folders.
