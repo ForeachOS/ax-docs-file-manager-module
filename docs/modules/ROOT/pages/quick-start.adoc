@@ -4,7 +4,7 @@ Steven Gentens, Arne Vandamme, Marc Vanbrabant, Stijn Vanhoof
 :module-version: 0.0.3.RELEASE
 :module-name: FileManagerModule
 :module-artifact: file-manager-module
-:module-url: https://across.foreach.be/modules/FileManagerModule
+:module-url: https://across.dev/modules/FileManagerModule
 :module-javadoc-url: https://across-docs.foreach.be/across-standard-modules/FileManagerModule/0.0.3.RELEASE/javadoc
 
 :!sectnums:
