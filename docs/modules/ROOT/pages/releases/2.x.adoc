@@ -3,3 +3,6 @@
 [#2-0-0]
 == 2.0.0.RELEASE
 * *Requires Across 5.0.0.*
+* Spring upgrade related changes
+* `FileManagerIcons` configures the used icons in FileManagerModule
+
