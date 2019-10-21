@@ -19,7 +19,7 @@ To use this `AzureFileRepository`, you must add the following dependencies to yo
 
 You create a new repository by passing an `CloudBlobClient` client and specifying a bucket name:
 
-.Configuration of a new Azure Blog Storage repository
+.Configuration of a new Azure Blob Storage repository
 [source,java,indent=0]
 ----
 @Bean
