@@ -28,6 +28,9 @@ More information can be found in the xref:file-repositories/index.adoc[Supported
 S3 bucket::
 The `AwsS3FileRepository` provides a way to stores all files on a Amazon S3 Bucket. More information can be found can be found in the xref:file-repositories/s3.adoc[Amazon S3] section.
 
+Azure Blob Storage::
+The `AzureFileRepository` provides a way to stores all files on a Azure Blog Storage container. More information can be found can be found in the xref:file-repositories/azure-blob.adoc[Azure Blob Storage] section.
+
 Custom::
 You can determine how your physical files are persisted by registering your own `FileRepository`.
 This can be done through the `FileRepositoryRegistry` bean.

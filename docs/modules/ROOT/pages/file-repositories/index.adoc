@@ -16,6 +16,9 @@ The following storage provider implementations are available:
 `xref:file-repositories/s3.adoc[AmazonS3FileRepository]`::
   Stores all files as AmazonS3 objects in a particular S3 bucket.
 
+`xref:file-repositories/azure-blob.adoc[AzureFileRepository]`::
+  Stores all files as Blobs in a particular Azure Blob Storage container.
+
 == Special purpose file repositories
 
 Additionally to the storage providers, the following special purpose repositories are also available:

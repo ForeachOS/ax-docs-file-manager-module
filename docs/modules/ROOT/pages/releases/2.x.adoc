@@ -5,4 +5,4 @@
 * *Requires Across 5.0.0.*
 * Spring upgrade related changes
 * `FileManagerIcons` configures the used icons in FileManagerModule
-
+* Added support for xref:file-repositories/azure-blob.adoc[Azure Blob Storage repositories]

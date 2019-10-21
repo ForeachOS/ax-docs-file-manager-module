@@ -14,7 +14,7 @@ The latter should be created automatically when writing to a file resource.
 * Calls to `exists()` should return `true` if the resource exists from a consumer point of view.
 This usually means that the contents of a folder can be queried without throwing exceptions. +
  +
-This is especially relevant for storage engines the do not truly support standalone folders (like xref:file-repositories/s3.adoc[Amazon S3]).
+This is especially relevant for storage engines the do not truly support standalone folders (like xref:file-repositories/s3.adoc[Amazon S3] or xref:file-repositories/azure-blob.adoc[Azure Blob Storage]).
 * Calls to `FolderResource.create()` should return `true` only if the storage engine created the actual folder.
 If `create()` was `true`, subsequent calls to `exists()` should return `true` as well.
 * Calls to `FolderResource.create()` should return `false` if the storage engine does not support standalone folders.

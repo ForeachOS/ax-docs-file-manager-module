@@ -1,0 +1,79 @@
+= Azure Blob Storage support
+
+An `AzureFileRepository` stores all its resources in an Azure Blob Storage container.
+
+== Configuring an AzureFileRepository
+To use this `AzureFileRepository`, you must add the following dependencies to your project:
+
+[source,xml,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+<dependencies>
+	<dependency>
+		<groupId>com.microsoft.azure</groupId>
+		<artifactId>azure-storage</artifactId>
+		<version>8.4.0</version>
+	</dependency>
+</dependencies>
+----
+
+You create a new repository by passing an `CloudBlobClient` client and specifying a bucket name:
+
+.Configuration of a new Azure Blog Storage repository
+[source,java,indent=0]
+----
+@Bean
+public FileRepository documentRepository( CloudBlobClient cloudBlobClient ) {
+    return AzureFileRepository.builder()
+				              .repositoryId( "documents" ) <1>
+				              .blobClient( cloudBlobClient ) <2>
+				              .containerName( "my-app-documents" ) <3>
+				              .build();
+}
+----
+
+<1> the unique repository id, all file descriptors will have this repository id
+<2> the CloudBlobClient to use
+<3> the name of the Azure Blob Storage container in which to store all objects
+
+You can obtain a CloudBlobClient from a CloudStorageAccount:
+
+.Obtain a CloudBlobClient using the CloudStorageAccount
+[source,java,indent=0]
+----
+@Bean
+@Profile("dev")
+public CloudStorageAccount azureStorage() {
+	return CloudStorageAccount.getDevelopmentStorageAccount();
+}
+
+@Bean
+@Profile("!dev")
+public CloudStorageAccount azureStorage() {
+	return CloudStorageAccount.parse("azure-blob-storage-connection-string"); <1>
+}
+
+@Bean
+public CloudBlobClient cloudBlobClient(CloudStorageAccount cloudStorageAccount){
+	return cloudStorageAccount.createCloudBlobClient();
+}
+----
+
+<1> the connection string that describes the Cloud Storage Account in your Azure subscription
+
+== Folder resource support
+Azure uses a common key prefix as a folder concept for grouping blobs.
+
+It doesn't support the creation of a folder object, a folder only exists if a file with an underlying path has been created.
+
+From a FileManagerModule perspective `FolderResource` is fully supported, with the following important side notes:
+
+* calls to `FolderResource.exists()` will always return `true`
+** querying such a folder will simply return the blobs starting with the folder name as prefix
+* calls to `FolderResource.create()` will not undertake any action and will always return `true` unless called on the root folder.
+* calls to `FolderResource.delete(false)` will not undertake any action, it will keep all objects starting with that folder prefix
+** `deleteChildren()` will delete the blobs starting with the folder prefix
+** `delete(true)` will do the same as `deleteChildren()`
+
+== Path generation
+Like the `xref:file-repositories/local.adoc[LocalFileRepository]`, the `AzureFileRepository` supports a `PathGenerator` for the automatic file resource creation.
