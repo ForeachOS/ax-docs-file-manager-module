@@ -74,7 +74,7 @@ Additional memory will be consumed for every item queued in the task executor.
 
 == Folder resource support
 Amazon S3 uses a common key prefix as a folder concept for grouping objects.
-If also supports the optional creation of an actual folder object, this is an object name with a trailing slash (`/`).
+It also supports the optional creation of an actual folder object, this is an object name with a trailing slash (`/`).
 
 From a FileManagerModule perspective `FolderResource` is fully supported, with the following important side notes:
 

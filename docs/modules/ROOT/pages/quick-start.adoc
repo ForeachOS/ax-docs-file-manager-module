@@ -107,6 +107,10 @@ You can find more information about multiple file uploads and moving files to an
 FileManager has support build in to store files on a Amazon S3 bucket (https://aws.amazon.com/s3/)
 by using a xref:file-repositories/s3.adoc[AwsS3FileRepository].
 
+== Azure Blob Storage support
+FileManager has support build in to store files on a Azure Blob Storage container (https://azure.microsoft.com/en-us/services/storage/blobs/)
+by using a xref:file-repositories/azure-blob.adoc[AzureFileRepository].
+
 == Saving files form code
 
 The creation and moving of files can by done by using the `FileManager`.
