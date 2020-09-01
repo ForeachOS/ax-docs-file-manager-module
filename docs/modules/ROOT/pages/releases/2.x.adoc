@@ -1,5 +1,9 @@
 = 2.x.x release notes
 
+[#2-1-0]
+== 2.1.0-SNAPSHOT
+* Added support for xref:file-repositories/ftp.adoc[FTP/FTPS] repositories based on Spring Integration
+
 [#2-0-0]
 == 2.0.0.RELEASE
 * *Requires Across 5.0.1.*

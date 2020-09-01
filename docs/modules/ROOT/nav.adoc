@@ -20,6 +20,7 @@
 ** xref:file-repositories/local.adoc[Local files]
 ** xref:file-repositories/s3.adoc[Amazon S3]
 ** xref:file-repositories/azure-blob.adoc[Azure Blob Storage]
+** xref:file-repositories/ftp.adoc[FTP/FTPS]
 
 * xref:file-repositories/expiring.adoc[Temporary files]
 * xref:file-repositories/caching.adoc[File resource caching]

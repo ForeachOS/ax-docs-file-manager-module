@@ -1,0 +1,88 @@
+= FTP(S) support
+
+FTP/FTPS support has been provided based on https://docs.spring.io/spring-integration/docs/5.1.9.RELEASE/reference/html/#ftp[Spring Integration's RemoteFileTemplate].
+
+== Configuring a SpringIntegrationFtpFileRepository
+To configure a `SpringIntegrationFtpFileRepository`, a dependency to spring integration and its integration type is required.
+Using spring boot, we can make use of the spring integration starter in combination with the spring integration ftp dependencies:
+
+[source,xml,indent=0]
+[subs="verbatim,quotes,attributes"]
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-integration</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.integration</groupId>
+    <artifactId>spring-integration-ftp</artifactId>
+</dependency>
+----
+
+A repository is consequently created by configuring an `FtpRemoteFileTemplate` based on an FTP SessionFactory (either a `DefaultFtpSessionFactory` or a `DefaultFtpsSessionFactory`).
+
+.Configuration of a new Spring Integration FTP repository
+[source,java,indent=0]
+----
+@Bean
+public FileRepository documentRepository( FtpRemoveFileTemplate ftpRemoteFileTemplate ) {
+   return SpringIntegrationFtpFileRepository.builder()
+                                  .repositoryId( "documents" ) <1>
+                                  .remoteFileTemplate( ftpRemoteFileTemplate ) <2>
+                                  .build()
+}
+----
+<1> the unique repository id, all file descriptors will have this repository id
+<2> the `FtpRemoteFileTemplate` to use
+
+A basic `FtpRemoteFileTemplate` connecting to a local ftp server can be configured as follows:
+
+.Configuring an `FtpRemoteFileTemplate`
+[source,java,indent=0]
+----
+@Bean
+DefaultFtpSessionFactory defaultFtpSessionFactory(
+        @Value("${ftp.username}") String username, <1>
+        @Value("${ftp.password}") String pw, <2>
+        @Value("${ftp.host}") String host, <3>
+        @Value("${ftp.port}") int port ) { <4>
+    DefaultFtpSessionFactory defaultFtpSessionFactory = new DefaultFtpSessionFactory();
+    defaultFtpSessionFactory.setClientMode( FTPClient.PASSIVE_LOCAL_DATA_CONNECTION_MODE ); <5>
+    defaultFtpSessionFactory.setUsername( username );
+    defaultFtpSessionFactory.setPassword( pw );
+    defaultFtpSessionFactory.setHost( host );
+    defaultFtpSessionFactory.setPort( port );
+    return defaultFtpSessionFactory;
+}
+
+@Bean
+FtpRemoteFileTemplate ftpRemoteFileTemplate( DefaultFtpSessionFactory dsf ) {
+    return new FtpRemoteFileTemplate( dsf );
+}
+----
+<1> The username of the user that you want to connect with. The root folder for the ftp repository will correspond to the root folder on the (external) system that the user has access to.
+This means that if the user has `/remote/users/joshua/` configured as it's root folder, then using a folder descriptor of `/` will correspond to `/remote/users/joshua/` on the external system.
+<2> The password of the user that you want to connect with
+<3> The hostname to connect to.
+<4> The port to connect to on the host.
+<5> The client mode that indicates which client or server connects to the other's data port to initialize data transfers.
+
+NOTE: The above is a very basic configuration. For more configuration options, please refer to the Spring integration docs and the SessionFactory javadoc.
+
+== Resource support
+
+* Files and folders which do not exist remotely, will only be created after a specific command has been executed.
+** Folders will be created when `FolderResource.create()` is executed.
+** Files will be created when an `OutputStream` is opened. If no data is transmitted to the stream, an empty file will remain on the remote repository.
+** Parent folders will be created recursively, should they not exist yet.
+* Each call will open one or more sessions for the current user to fetch data
+** If multiple remote calls should be executed within the same command, a single session is reused as much as possible.
+
+== Folder resource support
+From a FileManagerModule perspective `FolderResource` is fully supported, with the following important side notes:
+
+* Ant pattern matching is fully supported for looking up files on the remote server
+** Calls using listing or exhaustive patterns are likely to perform multiple calls to the remote server, which may lead to a lower performance.
+
+== Path generation
+Like the `xref:file-repositories/local.adoc[LocalFileRepository]`, the `SpringIntegrationFtpFileRepository` supports a `PathGenerator` for the automatic file resource creation.
