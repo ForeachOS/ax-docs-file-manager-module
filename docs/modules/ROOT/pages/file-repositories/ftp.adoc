@@ -25,11 +25,11 @@ A repository is consequently created by configuring an `FtpRemoteFileTemplate` b
 [source,java,indent=0]
 ----
 @Bean
-public FileRepository documentRepository( FtpRemoveFileTemplate ftpRemoteFileTemplate ) {
+public FileRepository documentRepository( FtpRemoteFileTemplate ftpRemoteFileTemplate ) {
    return SpringIntegrationFtpFileRepository.builder()
                                   .repositoryId( "documents" ) <1>
                                   .remoteFileTemplate( ftpRemoteFileTemplate ) <2>
-                                  .build()
+                                  .build();
 }
 ----
 <1> the unique repository id, all file descriptors will have this repository id
