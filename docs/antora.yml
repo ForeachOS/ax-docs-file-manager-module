@@ -1,5 +1,5 @@
 name: file-manager-module
 title: "Module: File Management"
-version: 2.2.0-SNAPSHOT
+version: master
 nav:
 - modules/ROOT/nav.adoc
